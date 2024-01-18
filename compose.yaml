@@ -1,0 +1,14 @@
+services:
+  api:
+    restart: always
+    environment:
+      FLASK_APP: app.py
+      FLASK_RUN_HOST: 0.0.0.0
+      PYTHONUNBUFFERED: 1
+      LIBVIRT_DEFAULT_URI: qemu://system
+    build: .
+    volumes:
+      - .:/app
+      - /var/run/libvirt:/var/run/libvirt
+    ports:
+      - 5000:5000
