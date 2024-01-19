@@ -9,3 +9,7 @@ class VirtualMachines(Resource):
     def get(self):
         vm = self.libVirt.get()
         return vm, 200
+    
+    def put(self):
+        vm,e = self.libVirt.put()
+        return vm ,e
