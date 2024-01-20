@@ -22,10 +22,18 @@ class Libvirt:
             result.append(vmx)
 
         return result
-    
-    def put(self):
-        payload = "<domain type='kvm'><name>demo</name><memory>500000</memory><vcpu>1</vcpu><os><type arch='x86_64' machine='pc'>hvm</type><boot dev='hd'/><boot dev='cdrom'/></os></domain>"
+
+    def create(self,payload):
+        payload = """
+        <domain type='kvm'><name>{name}</name><memory>500000</memory><vcpu>{cpu}</vcpu>  <memory unit="KiB">{memory}</memory>
+        <currentMemory unit="KiB">{memory}</currentMemory><os><type arch='x86_64' machine='pc'>hvm</type><boot dev='hd'/><boot dev='cdrom'/></os></domain>
+        """.format(**payload)
         dom = self.conn.defineXMLFlags(payload, 0)
         if dom.create() < 0:
             return '',500
         return "Done",200
+
+    def delete(self,name):
+        domain = self.conn.lookupByName(name)
+        domain.destroy()
+        domain.undefine()
