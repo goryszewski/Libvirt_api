@@ -1,14 +1,69 @@
 services:
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+    depends_on:
+      - mysql
+
+  mysql:
+    image: "mysql:latest"
+    ports:
+      - 3306:3306
+    volumes:
+      - data:/var/lib/mysql
+      - ./seeder/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      MYSQL_DATABASE: store
+      MYSQL_USER: api
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_root_password
+      - db_password
+
   api:
     restart: always
     environment:
+      MYSQL_DB: cloud
+      MYSQL_USER: root
+      MYSQL_HOST: mysql
+      MYSQL_PASS_FILE: /run/secrets/db_root_password
       FLASK_APP: app.py
       FLASK_RUN_HOST: 0.0.0.0
       PYTHONUNBUFFERED: 1
-      LIBVIRT_DEFAULT_URI: qemu://system
     build: .
     volumes:
       - .:/app
-      - /var/run/libvirt:/var/run/libvirt
     ports:
       - 5000:5000
+    secrets:
+      - db_root_password
+      - db_password
+
+  looper:
+    restart: always
+    environment:
+      FLASK_APP: looper.py
+      FLASK_RUN_HOST: 127.0.0.1
+      PYTHONUNBUFFERED: 1
+      LIBVIRT_DEFAULT_URI: qemu://system
+    volumes:
+      - .:/app
+      - /var/run/libvirt:/var/run/libvirt
+    build:
+      dockerfile: ./Dockerfile-looper
+      context: .
+
+
+secrets:
+  db_password:
+    file: .secrets/db_password.txt
+  db_root_password:
+    file: .secrets/db_root_password.txt
+
+volumes:
+  data: {}

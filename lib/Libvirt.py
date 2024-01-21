@@ -8,7 +8,7 @@ class Libvirt:
         vms = self.conn.listAllDomains(0)
         print(libvirt.VIR_CONNECT_LIST_DOMAINS_ACTIVE)
         for vm in vms:
-            vmx={}
+            vmx={"status":0}
             vmx['id']=vm.ID()
             vmx['name']=vm.name()
             vmx['OSType']=vm.OSType()
@@ -16,9 +16,9 @@ class Libvirt:
             if vm.isActive():
                 vmx['hostname']=vm.hostname()
                 vmx['time']=vm.getTime()
+                vmx['status']='1'
             vmx['state'] = vm.state() # ​state, reason
             vmx['info'] = vm.info()
-            print(dir(vm))
             result.append(vmx)
 
         return result
