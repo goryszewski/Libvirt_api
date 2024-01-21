@@ -19,12 +19,25 @@ jobs:
               http = true
               insecure = true
 
-      - name: Build and push to local registry
+      - name: Build and push to local registry libvirt_api
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
           tags: repo.internal:5000/libvirt_api:latest
-      - name: Inspect
+
+      - name: Inspect libvirt_api
         run: |
           docker buildx imagetools inspect repo.internal:5000/libvirt_api:latest
+
+      - name: Build and push to local registry libvirt_looper
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile-looper
+          push: true
+          tags: repo.internal:5000/libvirt_looper:latest
+
+      - name: Inspect libvirt_looper
+        run: |
+          docker buildx imagetools inspect repo.internal:5000/libvirt_looper:latest
