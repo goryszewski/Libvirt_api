@@ -1,9 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
+from marshmallow import Schema, fields, validate
 
 from databases.db import Base
-
-from marshmallow import Schema, fields, validate
 
 
 class VirtualMachineSchema(Schema):

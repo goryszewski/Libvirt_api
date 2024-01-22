@@ -6,11 +6,13 @@ conn = Libvirt()
 
 import requests
 
-url = "http://api:5000/api/vms"
+url = "http://api:5000"
 
 
 
 while True:
+
+    ### Begin Inventory
     vms = conn.get()
     for vm in vms:
         data = {
@@ -19,8 +21,16 @@ while True:
             "memory": vm['info'][3],
             "status":vm['status']
             }
-        print(data)
+        response = requests.post(f"{url}/api/vms", json=data)
 
-        response = requests.post(url, json=data)
-        print(response)
-    time.sleep(10)
+    ### Begin Tasks
+
+    response = requests.get(f"{url}/api/tasks")
+    tasks = response.json()
+
+    for task in tasks:
+        task_status={"status":0,"payload":"done"}
+
+        response = requests.post(f"{url}/api/task/{task['id']}", json=task_status)
+
+    time.sleep(30)

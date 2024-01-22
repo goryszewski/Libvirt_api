@@ -18,7 +18,8 @@ class Libvirt:
                 vmx['time']=vm.getTime()
                 vmx['status']='1'
             vmx['state'] = vm.state() # ​state, reason
-            vmx['info'] = vm.info()
+            vmx['info'] = vm.info() # ​state, maxmem, mem, cpus, cput
+
             result.append(vmx)
 
         return result
