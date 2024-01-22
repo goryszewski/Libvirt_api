@@ -6,7 +6,9 @@ conn = Libvirt()
 
 import requests
 
-url = "http://api:5000"
+from util.env import get_env
+
+url = f"http://{get_env('api')}:{get_env('port')}"
 
 
 

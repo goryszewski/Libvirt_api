@@ -8,10 +8,10 @@ from databases.db import db
 class VirtualMachines(Resource):
     def __init__(self):
         self.vm_schema = VirtualMachineSchema()
-
+        self.vm_schema_many = VirtualMachineSchema(many=True)
     def get(self):
         vm = VirtualMachine.query.all()
-        result = self.vm_schema.dump(vm)
+        result = self.vm_schema_many.dump(vm)
         return result, 200
 
     def post(self):

@@ -34,12 +34,13 @@ services:
       MYSQL_PASS_FILE: /run/secrets/db_root_password
       FLASK_APP: app.py
       FLASK_RUN_HOST: 0.0.0.0
+      FLASK_RUN_PORT: 8050
       PYTHONUNBUFFERED: 1
     build: .
     volumes:
       - .:/app
     ports:
-      - 5000:5000
+      - 8050:8050
     secrets:
       - db_root_password
       - db_password
@@ -47,8 +48,8 @@ services:
   looper:
     restart: always
     environment:
-      FLASK_APP: looper.py
-      FLASK_RUN_HOST: 127.0.0.1
+      api: api
+      port: 8050
       PYTHONUNBUFFERED: 1
       LIBVIRT_DEFAULT_URI: qemu://system
     volumes:
