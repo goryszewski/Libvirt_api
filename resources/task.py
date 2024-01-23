@@ -2,8 +2,9 @@ from flask_restful import Resource
 from flask import request
 from sqlalchemy.sql import func
 
-from Model.Tasks import TaskModel,TaskSchema
+from Model.Tasks import TaskModel, TaskSchema
 from databases.db import db
+
 
 class Tasks(Resource):
     def __init__(self):
@@ -17,7 +18,7 @@ class Tasks(Resource):
         return result, 200
 
     def post(self):
-        payload= request.get_json()
+        payload = request.get_json()
         error = self.task_schema.validate(payload)
         if error:
             return error, 422
@@ -28,20 +29,21 @@ class Tasks(Resource):
 
         return self.task_schema.dump(task), 200
 
+
 class Task(Resource):
     def __init__(self):
         self.task_schema = TaskSchema()
 
-    def post(self,id):
+    def post(self, id):
         body = request.get_json()
         error = TaskSchema().validate(body)
         if error:
-            return error,422
+            return error, 422
 
-        task = TaskModel.query.where(TaskModel.id==id).update(
+        task = TaskModel.query.where(TaskModel.id == id).update(
             dict(**TaskSchema().load(body), updatedAt=func.now())
         )
 
         db["session"].commit()
 
-        return task,200
+        return task, 200

@@ -12,14 +12,15 @@ class VirtualMachineSchema(Schema):
     name = fields.Str(required=True)
     status = fields.Int()
 
-class VirtualMachine(Base):
+
+class VirtualMachineModel(Base):
     __tablename__ = "VirtualMachine"
 
-    id =Column(Integer, primary_key=True)
-    memory =Column(Integer)
-    cpu =Column(Integer)
-    name =Column(String(50))
-    status =Column(String(50))
+    id = Column(Integer, primary_key=True)
+    memory = Column(Integer)
+    cpu = Column(Integer)
+    name = Column(String(50))
+    status = Column(String(50))
 
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     updatedAt = Column(DateTime(timezone=True), nullable=True)
@@ -28,7 +29,7 @@ class VirtualMachine(Base):
         self.name = name
         self.memory = memory
         self.cpu = cpu
-        self.status=status
+        self.status = status
 
     def __repr__(self):
         return f"<VirtualMachine {self.name}>"
