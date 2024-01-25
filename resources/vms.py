@@ -6,6 +6,29 @@ from Model.VMS import VirtualMachineSchema, VirtualMachineModel
 from Model.Tasks import TaskModel, TaskSchema
 from databases.db import db
 
+from lib.Libvirt import Libvirt
+
+
+class Cloud(Resource):
+    def __init__(self):
+        self.conn = Libvirt()
+
+    def get(self):
+        result = {"workers": []}
+
+        self.conn.get()
+        for vm in self.conn.get():
+            node = {
+                "name": vm["hostname"],
+                "ipprivate": vm["net"]["ens3"]['addrs'][0]['addr'],
+                "ippublic": vm["net"]["ens4"]['addrs'][0]['addr'],
+                "type": vm["OSType"],
+            }
+
+            result["workers"].append(node)
+
+        return result, 200
+
 
 class VirtualMachines(Resource):
     def __init__(self):

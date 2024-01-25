@@ -15,6 +15,3 @@ RUN pip3 install -r req.txt
 COPY . .
 
 CMD [ "python3" ,"looper.py" ]
-
-# podman develop
-# docker run --rm -p 5000:5000 -it -v .:/app  --security-opt label=disable b375b42f7d91

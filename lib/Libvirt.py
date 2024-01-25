@@ -1,4 +1,10 @@
 import libvirt
+import libxml2
+
+def desc(vm):
+    xmldesc = vm.XMLDesc(0)
+    doc = libxml2.parseDoc(xmldesc).xpathNewContext()
+    return doc.xpathEval("/domain/description")
 
 class Libvirt:
     def __init__(self):
@@ -6,8 +12,17 @@ class Libvirt:
     def get(self):
         result = []
         vms = self.conn.listAllDomains(0)
-        print(libvirt.VIR_CONNECT_LIST_DOMAINS_ACTIVE)
+
         for vm in vms:
+            tmp = desc(vm)
+            if not tmp:
+                continue
+            elif not "nodeK8S" in tmp[0].content:
+                continue
+
+
+
+
             vmx={"status":0}
             vmx['id']=vm.ID()
             vmx['name']=vm.name()
@@ -17,6 +32,8 @@ class Libvirt:
                 vmx['hostname']=vm.hostname()
                 vmx['time']=vm.getTime()
                 vmx['status']='1'
+                vmx['net'] = vm.interfaceAddresses(libvirt.VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_AGENT, 0)
+
             vmx['state'] = vm.state() # ​state, reason
             vmx['info'] = vm.info() # ​state, maxmem, mem, cpus, cput
 

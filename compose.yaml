@@ -39,25 +39,26 @@ services:
     build: .
     volumes:
       - .:/app
+      - /var/run/libvirt:/var/run/libvirt
     ports:
       - 8050:8050
     secrets:
       - db_root_password
       - db_password
 
-  looper:
-    restart: always
-    environment:
-      api: api
-      port: 8050
-      PYTHONUNBUFFERED: 1
-      LIBVIRT_DEFAULT_URI: qemu://system
-    volumes:
-      - .:/app
-      - /var/run/libvirt:/var/run/libvirt
-    build:
-      dockerfile: ./Dockerfile-looper
-      context: .
+  # looper:
+  #   restart: always
+  #   environment:
+  #     api: api
+  #     port: 8050
+  #     PYTHONUNBUFFERED: 1
+  #     LIBVIRT_DEFAULT_URI: qemu://system
+  #   volumes:
+  #     - .:/app
+  #     - /var/run/libvirt:/var/run/libvirt
+  #   build:
+  #     dockerfile: ./Dockerfile-looper
+  #     context: .
 
 
 secrets:
