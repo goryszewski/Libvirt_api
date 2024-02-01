@@ -7,6 +7,7 @@ from Model.Tasks import TaskModel, TaskSchema
 from databases.db import db
 
 from lib.Libvirt import Libvirt
+from lib.logging import logging
 
 
 class Cloud(Resource):
@@ -20,10 +21,13 @@ class Cloud(Resource):
         for vm in self.conn.get():
             node = {
                 "name": vm["hostname"],
-                "ipprivate": vm["net"]["ens3"]['addrs'][0]['addr'],
-                "ippublic": vm["net"]["ens4"]['addrs'][0]['addr'],
+                "ip": {
+                    "private": vm["net"]["ens3"]["addrs"][0]["addr"],
+                    "public": vm["net"]["ens4"]["addrs"][0]["addr"],
+                },
                 "type": vm["OSType"],
             }
+            logging.info(node)
 
             result["workers"].append(node)
 

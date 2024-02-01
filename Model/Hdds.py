@@ -5,34 +5,31 @@ from marshmallow import Schema, fields, validate
 from databases.db import Base
 
 
-# id: 1
-# vmid: 1
-# MAC: 00:00:00:00:00:00 # 17
-# ip: 100.100.100.100 # 27
-
-
-class InterfaceSchema(Schema):
+class HddSchema(Schema):
     id = fields.Int()
     vmid = fields.Int()
-    mac = fields.Str(required=True)
-    ip = fields.Str(required=True)
+    name = fields.Str()
+    path = fields.Str()
+    size = fields.Int()
 
 
-class InterfaceModel(Base):
-    __tablename__ = "Interface"
+class HddModel(Base):
+    __tablename__ = "hdd"
 
     id = Column(Integer, primary_key=True)
     vmid = Column(Integer)
-    mac = Column(String(17))
-    ip = Column(String(27))
+    name = Column(String(255))
+    path = Column(String(255))
+    size = Column(Integer)
 
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     updatedAt = Column(DateTime(timezone=True), nullable=True)
 
-    def __init__(self, vmid=None, ip=None, mac=None):
-        self.mac = mac
+    def __init__(self, vmid=None, name=None, path=None, size=0):
         self.vmid = vmid
-        self.ip = ip
+        self.name = name
+        self.path = path
+        self.size = size
 
     def __repr__(self):
-        return f"<Interface {self.name}>"
+        return f"<hdd {self.name}>"
