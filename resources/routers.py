@@ -4,7 +4,9 @@ from .interfaces import Interface
 from .hdd import Hdd
 from .loadbalancer import Loadbalancer, Loadbalancers
 
-from .k8s import Node, Lb, Lbtest
+from .auth import LoginApi
+
+from .k8s import Node, Lb
 
 
 def initialize_routes(api):
@@ -22,8 +24,11 @@ def initialize_routes(api):
     api.add_resource(Tasks, "/api/tasks")
     api.add_resource(Task, "/api/task/<id>")
 
+    # /api/v1
+
+    api.add_resource(LoginApi, "/api/v1/auth")
     # /api/v1/k8s/node
     api.add_resource(Node, "/api/v1/k8s/node")
     # /api/v1/k8s/lb
-    api.add_resource(Lb, "/api/v1/k8s/lb")
-    api.add_resource(Lbtest, "/api/v1/k8s/lb/<ip>")
+
+    api.add_resource(Lb, "/api/v1/k8s/lb", "/api/v1/k8s/lb/<ip>")

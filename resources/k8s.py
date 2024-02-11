@@ -1,8 +1,11 @@
 from flask_restful import Resource
+from flask_jwt_extended import jwt_required
 from flask import request
+
+from sqlalchemy.sql import null, func
+
 from lib.Libvirt import Libvirt
 from Model.Loadbalancers import LoadbalancerModel, LoadbalancerSchema
-from sqlalchemy.sql import null, func
 from databases.db import db
 
 
@@ -36,10 +39,11 @@ class Node(Resource):
 
 
 class Lb(Resource):
+    @jwt_required()
     def __init__(self):
         self.loadbalancer_schema = LoadbalancerSchema()
 
-    def post(self):
+    def post(self, ip=None):
         content_type = request.headers.get("Content-Type")
         body = {"function": None}
 
@@ -76,11 +80,7 @@ class Lb(Resource):
 
         return {"test": "POST:LB", "json": body}, 404
 
-
-class Lbtest(Resource):
-    def __init__(self):
-        self.loadbalancer_schema = LoadbalancerSchema()
-
+    # @jwt_required()
     def get(self, ip):
         loadbalancer = LoadbalancerModel.query.where(LoadbalancerModel.ip == ip).one()
         result = self.loadbalancer_schema.dump(loadbalancer)

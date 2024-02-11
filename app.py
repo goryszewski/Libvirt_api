@@ -2,15 +2,20 @@ from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
 from flask_marshmallow import Marshmallow
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager
 
 from resources.routers import initialize_routes
 from databases.db import db
 
 app = Flask(__name__)
+app.config.from_envvar('ENV_FILE_LOCATION')
+
 CORS(app, resources={r"*": {"origins": "*"}})
 api = Api(app)
-
+bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
+jwt = JWTManager(app)
 
 from databases.db import init_db
 from util.env import get_env
