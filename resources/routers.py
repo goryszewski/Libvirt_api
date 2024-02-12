@@ -7,6 +7,7 @@ from .loadbalancer import Loadbalancer, Loadbalancers
 from .auth import LoginApi
 
 from .k8s import Node, Lb
+from .user import Users,User
 
 
 def initialize_routes(api):
@@ -23,6 +24,9 @@ def initialize_routes(api):
 
     api.add_resource(Tasks, "/api/tasks")
     api.add_resource(Task, "/api/task/<id>")
+
+    api.add_resource(Users, "/api/users")
+    api.add_resource(User, "/api/user/<id>")
 
     # /api/v1
 
