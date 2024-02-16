@@ -6,7 +6,7 @@ import datetime
 
 
 class AUTHSchema(Schema):
-    user = fields.Str(required=True)
+    username = fields.Str(required=True)
     password = fields.Str(required=True)
 
 
@@ -18,16 +18,18 @@ class LoginApi(Resource):
         return "Use POST Method", 401
 
     def post(self):
+        print("post",request)
         body = request.get_json()
+        print("post",body)
 
         error = AUTHSchema().validate(body)
         if error:
             return error, 422
 
-        if body["user"] != body["password"]:
+        if body["username"] != body["password"]:
             return "Wrong username or password", 401
 
         expires = datetime.timedelta(days=1)
-        token = create_access_token(body["user"], expires_delta=expires)
+        token = create_access_token(body["username"], expires_delta=expires)
         print(token)
         return {"token": token}, 200

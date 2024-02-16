@@ -61,7 +61,7 @@ class Lb(Resource):
             loadbalancer = LoadbalancerModel.query.where(
                 LoadbalancerModel.ip == ip
             ).one()
-            return self.loadbalancer_schema.dump(loadbalancer), 202
+            return self.loadbalancer_schema.dump(loadbalancer), 200
 
         if body["function"] == "UnBindLB":
             service_name = body["service"]
@@ -70,7 +70,7 @@ class Lb(Resource):
             ).update(dict(service_name=null(), updatedAt=func.now()))
             db["session"].commit()
 
-            return {}, 202
+            return {}, 200
         if body["function"] == "GetFirstFreeLB":
             loadbalancer = LoadbalancerModel.query.filter(
                 LoadbalancerModel.service_name == null()
