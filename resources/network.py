@@ -19,8 +19,8 @@ class NetworkResource(Resource):
 
     def get(self, id=None):
         if id:
-            network = Network.query.where(Network.id == id).all()
-            result = self.schemaM.dump(network)
+            network = Network.query.where(Network.id == id).one()
+            result = self.schema.dump(network)
             return result, 200
 
         network = Network.query.where(Network.status != 2).all()
