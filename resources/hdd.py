@@ -3,15 +3,16 @@ from flask import request
 from sqlalchemy.sql import func
 
 
-from Model.Hdds import HddSchema, HDD
+from Model.Hdds import HddSchema, Hdd
 from databases.db import db
 
 
-class HddR(Resource):
+class HddResource(Resource):
     def __init__(self):
-        self.hdd_schema = HddSchema()
+        self.schema = HddSchema()
+        self.schemaM = HddSchema(many=True)
 
-    def get(self, vmid):
-        hdd = HDD.query.where(HDD.vmid == vmid).all()
-        result = self.hdd_schema.dump(hdd)
+    def get(self, vm_id):
+        hdd = Hdd.query.where(Hdd.vm_id == vm_id).all()
+        result = self.schema.dump(hdd)
         return result, 200

@@ -1,25 +1,26 @@
-from .vms import  VirtualMachine, Cloud
+from .network import NetworkResource
+from .hdd import HddResource
+from .vms import VirtualMachineResource, Cloud
 from .task import Tasks, Task
-from .interfaces import Interface
-from .hdd import HddR
+from .interfaces import InterfaceResource
 from .loadbalancer import Loadbalancer, Loadbalancers
 
-from.network import NetworkResource
 
 from .auth import LoginApi
 
 from .k8s import Node, Lb
-from .user import Users,User
+from .user import Users, User
 
 
 def initialize_routes(api):
+    api.add_resource(NetworkResource, "/api/network", "/api/network/<id>")
+    api.add_resource(HddResource, "/api/hdd/<vmid>")
+
     api.add_resource(Cloud, "/api/cloud/vms")
 
-    api.add_resource(HddR, "/api/hdd/<vmid>")
-    api.add_resource(Interface, "/api/interface/<vmid>")
+    api.add_resource(InterfaceResource, "/api/interface/<vmid>")
 
-    api.add_resource(VirtualMachine, "/api/vm","/api/vm/<id>")
-    api.add_resource(NetworkResource, "/api/network","/api/network/<id>")
+    api.add_resource(VirtualMachineResource, "/api/vm", "/api/vm/<id>")
 
     api.add_resource(Loadbalancers, "/api/lbs")
     api.add_resource(Loadbalancer, "/api/lb/<id>")

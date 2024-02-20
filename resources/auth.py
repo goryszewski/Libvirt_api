@@ -18,9 +18,9 @@ class LoginApi(Resource):
         return "Use POST Method", 401
 
     def post(self):
-        print("post",request)
+        print("post", request)
         body = request.get_json()
-        print("post",body)
+        print("post", body)
 
         error = AUTHSchema().validate(body)
         if error:

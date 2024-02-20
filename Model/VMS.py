@@ -4,6 +4,13 @@ from sqlalchemy.orm import relationship
 from marshmallow import Schema, fields, validate
 
 from databases.db import Base
+from .Interfaces import InterfaceSchema
+from .Hdds import HddSchema
+
+# 0 - todo create
+# 1 - created
+# 2 - deleted
+# 3 - todo delete
 
 
 class VirtualMachineSchema(Schema):
@@ -12,31 +19,11 @@ class VirtualMachineSchema(Schema):
     cpu = fields.Int(required=True)
     name = fields.Str(required=True)
     status = fields.Int()
-    # 0 - todo create
-    # 1 - created
-    # 2 - deleted
-
-class HddSchema(Schema):
-    id = fields.Int()
-    size = fields.Int(required=True)
-
-class IPSchema(Schema):
-    id = fields.Int()
-    ip = fields.Str(required=True)
-    mask = fields.Int(required=True)
-    mac = fields.Str(required=True)
-
-class NewVirtualMachineSchema(Schema):
-    id = fields.Int()
-    memory = fields.Int(required=True)
-    cpu = fields.Int(required=True)
-    name = fields.Str(required=True)
     disk = fields.List(fields.Nested(HddSchema))
-    ip = fields.List(fields.Nested(IPSchema))
+    interface = fields.List(fields.Nested(InterfaceSchema))
 
 
-
-class VirtualMachineModel(Base):
+class VirtualMachine(Base):
     __tablename__ = "VirtualMachine"
 
     id = Column(Integer, primary_key=True)
@@ -44,9 +31,8 @@ class VirtualMachineModel(Base):
     cpu = Column(Integer)
     name = Column(String(50))
     status = Column(String(50))
-    ip = relationship('IP', backref='VirtualMachine', lazy=True)
-    disk = relationship('HDD', backref='VirtualMachine', lazy=True)
-
+    interface = relationship("Interface", backref="VirtualMachine", lazy=True)
+    disk = relationship("Hdd", backref="VirtualMachine", lazy=True)
 
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     updatedAt = Column(DateTime(timezone=True), nullable=True)

@@ -13,7 +13,7 @@ class TaskSchema(Schema):
     status = fields.Int(required=True)
 
 
-class TaskModel(Base):
+class Task(Base):
     __tablename__ = "Task"
 
     id = Column(Integer, primary_key=True)
@@ -28,4 +28,4 @@ class TaskModel(Base):
         self.status = status
 
     def __repr__(self):
-        return f"<TaskModel {self.name}>"
+        return f"<Task {self.name}>"

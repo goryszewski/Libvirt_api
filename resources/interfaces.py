@@ -3,15 +3,15 @@ from flask import request
 from sqlalchemy.sql import func
 
 
-from Model.Ips import IPSchema,IP
+from Model.Interfaces import InterfaceSchema, Interface
 from databases.db import db
 
 
-class Interface(Resource):
+class InterfaceResource(Resource):
     def __init__(self):
-        self.interface_schema = IPSchema()
+        self.schema = InterfaceSchema()
 
-    def get(self, vmid):
-        interface =IP.query.where(IP.vmid == vmid).all()
-        result = self.interface_schema.dump(interface)
+    def get(self, vm_id):
+        interface = Interface.query.where(Interface.vm_id == vm_id).all()
+        result = self.schema.dump(interface)
         return result, 200

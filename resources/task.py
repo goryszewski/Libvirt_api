@@ -2,7 +2,7 @@ from flask_restful import Resource
 from flask import request
 from sqlalchemy.sql import func
 
-from Model.Tasks import TaskModel, TaskSchema
+from Model.Tasks import Task, TaskSchema
 from databases.db import db
 
 
@@ -12,7 +12,7 @@ class Tasks(Resource):
         self.task_schema_many = TaskSchema(many=True)
 
     def get(self):
-        tasks = TaskModel.query.all()
+        tasks = Task.query.all()
         result = self.task_schema_many.dump(tasks)
 
         return result, 200
@@ -23,7 +23,7 @@ class Tasks(Resource):
         if error:
             return error, 422
 
-        task = TaskModel(**self.task_schema.load(payload))
+        task = Task(**self.task_schema.load(payload))
         db["session"].add(task)
         db["session"].commit()
 
@@ -40,7 +40,7 @@ class Task(Resource):
         if error:
             return error, 422
 
-        task = TaskModel.query.where(TaskModel.id == id).update(
+        task = Task.query.where(Task.id == id).update(
             dict(**TaskSchema().load(body), updatedAt=func.now())
         )
 
