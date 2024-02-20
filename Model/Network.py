@@ -1,30 +1,26 @@
 from sqlalchemy import Column, Integer, String, DateTime,ForeignKey
 from sqlalchemy.sql import func
 from marshmallow import Schema, fields, validate
+from sqlalchemy.orm import relationship
 
 from databases.db import Base
 
-
-class HddSchema(Schema):
+class NetworkSchema(Schema):
     id = fields.Int()
-    vmid = fields.Int()
-    size = fields.Int()
+    name = fields.Str()
 
-
-class HDD(Base):
-    __tablename__ = "hdd"
-
+class Network(Base):
+    __tablename__ = "network"
     id = Column(Integer, primary_key=True)
-    vmid = Column(Integer,ForeignKey('VirtualMachine.id'))
-    size = Column(Integer)
+    name = Column(String(50))
+    ip = relationship('IP', backref='Network', lazy=True)
 
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     updatedAt = Column(DateTime(timezone=True), nullable=True)
 
-    def __init__(self, vmid=None,  size=0):
-        self.vmid = vmid
+    def __init__(self, name=None):
+        self.name = name
 
-        self.size = size
 
     def __repr__(self):
-        return f"<HDD {self.id}>"
+        return f"<Network {self.name}>"

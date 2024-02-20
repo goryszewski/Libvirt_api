@@ -1,8 +1,10 @@
-from .vms import VirtualMachines, VirtualMachine, Cloud
+from .vms import  VirtualMachine, Cloud
 from .task import Tasks, Task
 from .interfaces import Interface
-from .hdd import Hdd
+from .hdd import HddR
 from .loadbalancer import Loadbalancer, Loadbalancers
+
+from.network import NetworkResource
 
 from .auth import LoginApi
 
@@ -13,11 +15,11 @@ from .user import Users,User
 def initialize_routes(api):
     api.add_resource(Cloud, "/api/cloud/vms")
 
-    api.add_resource(Hdd, "/api/hdd/<vmid>")
+    api.add_resource(HddR, "/api/hdd/<vmid>")
     api.add_resource(Interface, "/api/interface/<vmid>")
 
-    api.add_resource(VirtualMachines, "/api/vms")
-    api.add_resource(VirtualMachine, "/api/vm/<id>")
+    api.add_resource(VirtualMachine, "/api/vm","/api/vm/<id>")
+    api.add_resource(NetworkResource, "/api/network","/api/network/<id>")
 
     api.add_resource(Loadbalancers, "/api/lbs")
     api.add_resource(Loadbalancer, "/api/lb/<id>")
