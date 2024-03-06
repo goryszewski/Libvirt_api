@@ -5,6 +5,7 @@ from sqlalchemy.sql import func
 from Model.Network import Network, NetworkSchema
 from Model.Interfaces import Interface
 from databases.db import db
+from lib.logging import logging
 
 
 class NetworkResource(Resource):
@@ -13,21 +14,30 @@ class NetworkResource(Resource):
         self.schemaM = NetworkSchema(many=True)
 
     def _return(self, id):
-        vm = Network.query.where(Network.id == id).one()
-        result = self.schema.dump(vm)
+        net = Network.query.where(Network.id == id).one()
+        result = self.schema.dump(net)
+        print(result)
         return result, 200
 
     def get(self, id=None):
+        network = []
+        statuscode = 200
         if id:
-            network = Network.query.where(Network.id == id).one()
-            result = self.schema.dump(network)
-            return result, 200
+            network = Network.query.where(Network.id == id, Network.status != 2).all()
 
-        network = Network.query.where(Network.status != 2).all()
+            # result = self.schemaM.dump(network)
+            # return result, 200
+        else:
+            network = Network.query.where(Network.status != 2).all()
         result = self.schemaM.dump(network)
-        return result, 200
+
+        if network == []:
+            statuscode = 404
+
+        return result, statuscode
 
     def post(self, id=None):
+        logging.info(request.get_json())
         if id != None:
             return "ID not expcted", 501
         payload = request.get_json()

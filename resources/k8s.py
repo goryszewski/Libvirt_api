@@ -7,17 +7,19 @@ from sqlalchemy.sql import null, func
 from lib.Libvirt import Libvirt
 from Model.Loadbalancers import LoadbalancerModel, LoadbalancerSchema
 from databases.db import db
-
+from lib.logging import logging
 
 class Node(Resource):
     def __init__(self):
         self.conn = Libvirt()
 
     def post(self):
+        logging.info(request.get_json())
         content_type = request.headers.get("Content-Type")
-        body = {"function": None}
-        if content_type == "application/json":
-            body = request.get_json()
+        # body = {"function": None}
+        # if content_type == "application/json":
+        body = request.get_json()
+        logging.info(body)
 
         if body["function"] == "GetNodeByHostname":
             self.conn.get()

@@ -51,7 +51,7 @@ class VirtualMachineResource(Resource):
     def _return(self, id):
         vm = VirtualMachine.query.where(VirtualMachine.id == id).one()
         result = self.vm_schema.dump(vm)
-        return result, 200
+        return result, 203
 
     def get(self, id=None):
         if id != None:
@@ -60,10 +60,10 @@ class VirtualMachineResource(Resource):
             if not vm:
                 return {}, 404
             result = self.new_vm_schema_many.dump(vm)[0]
-            return result, 200
+            return result, 201
         vm = VirtualMachine.query.where(VirtualMachine.status != 2).all()
         result = self.new_vm_schema_many.dump(vm)
-        return result, 200
+        return result, 202
 
     def put(self, id=None):
         if id == None:

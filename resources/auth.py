@@ -3,7 +3,7 @@ from flask import Response, request
 from flask_jwt_extended import create_access_token
 from marshmallow import Schema, fields
 import datetime
-
+from lib.logging import logging
 
 class AUTHSchema(Schema):
     username = fields.Str(required=True)
@@ -18,9 +18,8 @@ class LoginApi(Resource):
         return "Use POST Method", 401
 
     def post(self):
-        print("post", request)
+        logging.info(request.get_json())
         body = request.get_json()
-        print("post", body)
 
         error = AUTHSchema().validate(body)
         if error:
@@ -31,5 +30,4 @@ class LoginApi(Resource):
 
         expires = datetime.timedelta(days=1)
         token = create_access_token(body["username"], expires_delta=expires)
-        print(token)
         return {"token": token}, 200

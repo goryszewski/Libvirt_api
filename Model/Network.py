@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+import sqlalchemy as sa
 from sqlalchemy.sql import func
 from marshmallow import Schema, fields, validate
 from sqlalchemy.orm import relationship
@@ -21,13 +22,13 @@ class Network(Base):
     __tablename__ = "Network"
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
-    mode = Column(String(50))
-    status = Column(Integer)
-    ipv4_dhcp = Column(Integer)
-    ipv4_network = Column(String(50))
-    ipv4_end = Column(String(50))
-    ipv4_start = Column(String(50))
-    dns_name = Column(String(50))
+    mode = Column(String(50),nullable=True)
+    status = Column(Integer,nullable=True)
+    ipv4_dhcp = Column(Integer,nullable=True)
+    ipv4_network = Column(String(50),nullable=True)
+    ipv4_end = Column(String(50),nullable=True)
+    ipv4_start = Column(String(50),nullable=True)
+    dns_name = Column(String(50),nullable=True)
 
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     updatedAt = Column(DateTime(timezone=True), nullable=True)
