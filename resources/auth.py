@@ -5,6 +5,7 @@ from marshmallow import Schema, fields
 import datetime
 from lib.logging import logging
 
+
 class AUTHSchema(Schema):
     username = fields.Str(required=True)
     password = fields.Str(required=True)

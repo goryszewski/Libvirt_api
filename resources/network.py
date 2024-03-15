@@ -23,13 +23,12 @@ class NetworkResource(Resource):
         network = []
         statuscode = 200
         if id:
-            network = Network.query.where(Network.id == id, Network.status != 2).all()
+            network = Network.query.where(Network.id == id, Network.status != 2).one()
 
-            # result = self.schemaM.dump(network)
-            # return result, 200
+            result = self.schema.dump(network)
         else:
             network = Network.query.where(Network.status != 2).all()
-        result = self.schemaM.dump(network)
+            result = self.schemaM.dump(network)
 
         if network == []:
             statuscode = 404
@@ -55,7 +54,16 @@ class NetworkResource(Resource):
         return self._return(net.id)
 
     def put(self, id=None):
-        return {}, 501
+        logging.info(request.get_json())
+        payload = request.get_json()
+        error = self.schema.validate(payload)
+        if error:
+            return error, 422
+        update_payload = dict(status=0, updatedAt=func.now(), **payload)
+        network = Network.query.where(Network.id == id).update(update_payload)
+        logging.info(f"Output update: {network}")
+        db["session"].commit()
+        return self._return(id)
 
     def delete(self, id):
         update_payload = dict(status=2, updatedAt=func.now())
@@ -64,4 +72,5 @@ class NetworkResource(Resource):
             return "resource used", 501
         network = Network.query.where(Network.id == id).update(update_payload)
         db["session"].commit()
-        return network, 200
+        logging.info(f"Output update: {network}")
+        return {}, 200

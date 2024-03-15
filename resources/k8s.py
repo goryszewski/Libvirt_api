@@ -9,6 +9,7 @@ from Model.Loadbalancers import LoadbalancerModel, LoadbalancerSchema
 from databases.db import db
 from lib.logging import logging
 
+
 class Node(Resource):
     def __init__(self):
         self.conn = Libvirt()

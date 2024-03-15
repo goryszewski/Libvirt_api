@@ -14,7 +14,7 @@ from .user import Users, User
 
 def initialize_routes(api):
     api.add_resource(NetworkResource, "/api/network", "/api/network/<id>")
-    api.add_resource(HddResource, "/api/hdd/<vmid>")
+    api.add_resource(HddResource, "/api/hdd", "/api/hdd/<id>")
 
     api.add_resource(Cloud, "/api/cloud/vms")
 
