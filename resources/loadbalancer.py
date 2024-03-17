@@ -12,46 +12,19 @@ class Loadbalancer(Resource):
         self.loadbalancer_schema = LoadbalancerSchema()
         # self.loadbalancer_schema_many = LoadbalancerSchema(many=True)
 
-    def get(self, id):
+    def get(self, id=None):
         loadbalancer = LoadbalancerModel.query.where(LoadbalancerModel.id == id).one()
         result = self.loadbalancer_schema.dump(loadbalancer)
         return result, 200
 
-    def post(self, id):
-        service_name = request.args.get("service_name")
-        if not service_name:
-            service_name = null()
-        loadbalancer = LoadbalancerModel.query.where(LoadbalancerModel.id == id).update(
-            dict(service_name=service_name, updatedAt=func.now())
-        )
+    def post(self, id=None):
+        if id != None:
+            return "ID not expcted", 501
 
-        db["session"].commit()
-        loadbalancer = loadbalancer = LoadbalancerModel.query.where(
-            LoadbalancerModel.id == id
-        ).one()
-        return self.loadbalancer_schema.dump(loadbalancer), 202
+        payload = request.get_json()
+        logging.info(payload)
 
+        # DOTO - get free ip , bind payload , return lb object
 
-class Loadbalancers(Resource):
-    def __init__(self):
-        self.loadbalancer_schema = LoadbalancerSchema()
-        self.loadbalancer_schema_many = LoadbalancerSchema(many=True)
+        return payload, 202
 
-    def get(self):
-        type_output = request.args.get("filter")
-
-        if type_output == "3":
-            loadbalancer = LoadbalancerModel.query.where(
-                LoadbalancerModel.service_name == null()
-            ).all()
-        elif type_output == "2":
-            loadbalancer = LoadbalancerModel.query.filter(
-                LoadbalancerModel.service_name == null()
-            ).first()
-            result = self.loadbalancer_schema.dump(loadbalancer)
-            return result, 200
-        else:
-            loadbalancer = LoadbalancerModel.query.all()
-
-        result = self.loadbalancer_schema_many.dump(loadbalancer)
-        return result, 200

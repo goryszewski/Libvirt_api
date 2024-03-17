@@ -4,12 +4,23 @@ from marshmallow import Schema, fields, validate
 
 from databases.db import Base
 
+class ServiceLBSchema(Schema):
+    id = fields.Int()
+    lb_id = fields.Int()
+    port = fields.Int()
+    lb_port = fields.Int()
 
 class LoadbalancerSchema(Schema):
     id = fields.Int()
     ip = fields.Str(required=True)
-    service_name = fields.Str(required=True)
+    name = fields.Str(required=True) 
+    namespace = fields.Str(required=True) 
 
+class NodeSchema(Schema):
+    id = fields.Int()
+    lb_id = fields.Int()
+    name = fields.Str(required=True) 
+    namespace = fields.Str(required=True) 
 
 class LoadbalancerModel(Base):
     __tablename__ = "Loadbalancer"
