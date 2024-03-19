@@ -88,3 +88,12 @@ class Lb(Resource):
         loadbalancer = LoadbalancerModel.query.where(LoadbalancerModel.ip == ip).one()
         result = self.loadbalancer_schema.dump(loadbalancer)
         return result, 200
+
+    # def put(self, ip):
+    #     loadbalancer = LoadbalancerModel.query.where(LoadbalancerModel.ip == ip).one()
+    #     result = self.loadbalancer_schema.dump(loadbalancer)
+    #     return result, 200
+    # def delete(self, ip):
+    #     loadbalancer = LoadbalancerModel.query.where(LoadbalancerModel.ip == ip).one()
+    #     result = self.loadbalancer_schema.dump(loadbalancer)
+    #     return result, 200

@@ -8,6 +8,7 @@ from flask_jwt_extended import JWTManager
 from resources.routers import initialize_routes
 from databases.db import db
 
+
 app = Flask(__name__)
 app.config.from_envvar('ENV_FILE_LOCATION')
 
@@ -18,6 +19,7 @@ ma = Marshmallow(app)
 jwt = JWTManager(app)
 
 from databases.db import init_db
+from databases.mongo import init_mongo
 from util.env import get_env
 
 init_db(
@@ -28,6 +30,16 @@ init_db(
         "db": get_env("MYSQL_DB"),
     }
 )
+
+init_mongo(
+    {
+        "login": get_env("MONGO_USER"),
+        "password": get_env("MONGO_PASS"),
+        "host": get_env("MONGO_HOST"),
+        "db": get_env("MONGO_DB"),
+    }
+)
+
 
 initialize_routes(api)
 

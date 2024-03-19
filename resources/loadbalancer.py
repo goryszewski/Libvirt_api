@@ -1,30 +1,29 @@
 from flask_restful import Resource
 from flask import request
-from sqlalchemy.sql import null, func
 
+import json
 
-from Model.Loadbalancers import LoadbalancerModel, LoadbalancerSchema
-from databases.db import db
+from Model.Mongo_LB import LoadBalacnerModel,LoadBalacnerSchema
 
 
 class Loadbalancer(Resource):
     def __init__(self):
-        self.loadbalancer_schema = LoadbalancerSchema()
-        # self.loadbalancer_schema_many = LoadbalancerSchema(many=True)
+        self.loadbalancer_schema = LoadBalacnerSchema()
 
-    def get(self, id=None):
-        loadbalancer = LoadbalancerModel.query.where(LoadbalancerModel.id == id).one()
-        result = self.loadbalancer_schema.dump(loadbalancer)
-        return result, 200
+
+    def get(self,id=None):
+
+        all = LoadBalacnerModel.objects
+
+        return json.loads(all.to_json())
 
     def post(self, id=None):
-        if id != None:
-            return "ID not expcted", 501
-
         payload = request.get_json()
-        logging.info(payload)
+        error = self.loadbalancer_schema.validate(payload)
+        if error:
+            return error, 422
 
-        # DOTO - get free ip , bind payload , return lb object
+        lb = LoadBalacnerModel(**self.loadbalancer_schema.dump(payload))
+        lb.save()
 
-        return payload, 202
-
+        return json.loads(lb.to_json()), 200

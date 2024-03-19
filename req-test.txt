@@ -3,3 +3,5 @@ xmltodict==0.13.0
 libxml2-python3
 flask-bcrypt
 flask-jwt-extended
+pymongo
+mongoengine

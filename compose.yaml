@@ -8,7 +8,21 @@ services:
       - PMA_ARBITRARY=1
     depends_on:
       - mysql
-
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+  mongo:
+    image: "mongo"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
   mysql:
     image: "mysql:latest"
     ports:
@@ -28,6 +42,10 @@ services:
   api:
     restart: always
     environment:
+      MONGO_DB: cloud
+      MONGO_USER: root
+      MONGO_HOST: mongo
+      MONGO_PASS: example
       MYSQL_DB: cloud
       MYSQL_USER: root
       MYSQL_HOST: mysql
