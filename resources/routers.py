@@ -15,7 +15,7 @@ from .user import Users, User
 def initialize_routes(api):
     api.add_resource(NetworkResource, "/api/network", "/api/network/<id>")
     api.add_resource(HddResource, "/api/hdd", "/api/hdd/<id>")
-    api.add_resource(Loadbalancer, "/api/lb", "/api/lb/<id>")
+    api.add_resource(Loadbalancer, "/api/lb", "/api/lb/<namespace>/<name>")
 
     api.add_resource(Cloud, "/api/cloud/vms")
 

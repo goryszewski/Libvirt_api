@@ -9,18 +9,25 @@ from mongoengine import (
 from marshmallow import Schema, fields
 
 
-class Ports(EmbeddedDocument):
+class Port(EmbeddedDocument):
     name = StringField()
     protocol = StringField()
     port = IntField()
     nodeport = IntField()
 
 
+class Node(EmbeddedDocument):
+    name = StringField()
+    public_ip = StringField()
+    private_ip = StringField()
+
+
 class LoadBalacnerModel(Document):
     ip = StringField()
     name = StringField()
     namespace = StringField()
-    ports = ListField(EmbeddedDocumentField(Ports))
+    ports = ListField(EmbeddedDocumentField(Port))
+    nodes = ListField(EmbeddedDocumentField(Node))
 
 
 class PortSchema(Schema):
@@ -30,8 +37,14 @@ class PortSchema(Schema):
     nodeport = fields.Int()
 
 
+class NodeSchema(Schema):
+    name = fields.Str()
+    public_ip = fields.Str()
+    private_ip = fields.Str()
+
+
 class LoadBalacnerSchema(Schema):
-    ip = fields.Str()
     name = fields.Str()
     namespace = fields.Str()
     ports = fields.List(fields.Nested(PortSchema))
+    nodes = fields.List(fields.Nested(NodeSchema))
