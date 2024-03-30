@@ -18,8 +18,8 @@ class Port(EmbeddedDocument):
 
 class Node(EmbeddedDocument):
     name = StringField()
-    public_ip = StringField()
-    private_ip = StringField()
+    external = StringField()
+    internal = StringField()
 
 
 class LoadBalacnerModel(Document):
@@ -39,8 +39,8 @@ class PortSchema(Schema):
 
 class NodeSchema(Schema):
     name = fields.Str()
-    public_ip = fields.Str()
-    private_ip = fields.Str()
+    external = fields.Str()
+    internal = fields.Str()
 
 
 class LoadBalacnerSchema(Schema):

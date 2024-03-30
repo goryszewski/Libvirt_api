@@ -23,7 +23,7 @@ class Loadbalancer(Resource):
         if name and namespace:
             all = LoadBalacnerModel.objects(name=name, namespace=namespace).first()
         else:
-            all = LoadBalacnerModel.objects()
+            all = LoadBalacnerModel.objects(name__ne='',namespace__ne="")
 
         if not all:
             return {}, 404
@@ -34,6 +34,7 @@ class Loadbalancer(Resource):
         payload = request.get_json()
         error = self.loadbalancer_schema.validate(payload)
         if error:
+            print(error)
             return error, 422
 
         lb = LoadBalacnerModel.objects(
@@ -52,11 +53,11 @@ class Loadbalancer(Resource):
             lb = LoadBalacnerModel.objects(
                 name=payload["name"], namespace=payload["namespace"]
             ).first()
-            return json.loads(lb.to_json()), 202
+            return json.loads(lb.to_json()), 200
 
         lb = LoadBalacnerModel(**self.loadbalancer_schema.dump(payload), ip=ip)
         lb.save()
-        return json.loads(lb.to_json()), 202
+        return json.loads(lb.to_json()), 200
 
     def put(self, name=None, namespace=None):
         payload = request.get_json()
@@ -68,7 +69,7 @@ class Loadbalancer(Resource):
             name=payload["name"], namespace=payload["namespace"]
         ).first()
         if not lb:
-            return {}, 404
+            return {}, 200
 
         lb.update(**payload)
         lb = LoadBalacnerModel.objects(
@@ -87,7 +88,7 @@ class Loadbalancer(Resource):
             name=payload["name"], namespace=payload["namespace"]
         )
         if not lb:
-            return {}, 404
+            return {}, 200
 
         lb.update(name="", namespace="", ports=[], nodes=[])
-        return {}, 202
+        return {}, 200

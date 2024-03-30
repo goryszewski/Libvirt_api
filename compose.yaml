@@ -18,11 +18,15 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
   mongo:
+    labels:
+      docker: 123
     image: "mongo"
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongoDBdata:/data/db
   mysql:
     image: "mysql:latest"
     ports:
@@ -90,3 +94,4 @@ secrets:
 
 volumes:
   data: {}
+  mongoDBdata: {}
