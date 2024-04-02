@@ -23,7 +23,7 @@ class Loadbalancer(Resource):
         if name and namespace:
             all = LoadBalacnerModel.objects(name=name, namespace=namespace).first()
         else:
-            all = LoadBalacnerModel.objects(name__ne='',namespace__ne="")
+            all = LoadBalacnerModel.objects(name__ne="", namespace__ne="")
 
         if not all:
             return {}, 404
