@@ -17,8 +17,15 @@ class DiskModel(Document):
 
 class NetworkModel(Document):
     name = StringField()
+    mode = StringField()
+
+
+class InterfaceModel(Document):
+    name = StringField()
     mac = StringField()
     ip = StringField()
+    slot = StringField()
+    network_name = StringField()
 
 
 class NodeModel(Document):
