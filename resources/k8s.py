@@ -24,10 +24,8 @@ class Node(Resource):
                 if vm["hostname"] == body["hostname"]:
                     return {
                         "name": vm["hostname"],
-                        "ip": {
-                            "private": vm["net"]["ens3"]["addrs"][0]["addr"],
-                            "public": vm["net"]["ens4"]["addrs"][0]["addr"],
-                        },
+                        "internal": vm["net"]["ens3"]["addrs"][0]["addr"],
+                        "external": vm["net"]["ens4"]["addrs"][0]["addr"],
                         "type": vm["OSType"],
                     }
 

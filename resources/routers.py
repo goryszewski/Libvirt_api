@@ -18,9 +18,9 @@ def initialize_routes(api):
 
     # api.add_resource(NetworkResource, "/api/v1/network", "/api/v1/network/<id>")
     # api.add_resource(Loadbalancer, "/api/v1/lb", "/api/v1/lb/<namespace>/<name>")
-    api.add_resource(Node, "/api/v1/node", "/api/v1/node/<name>")
+#    api.add_resource(Node, "/api/v1/node", "/api/v1/node/<name>")
 
-    # api.add_resource(Node, "/api/v1/k8s/node")
+    api.add_resource(Node, "/api/v1/k8s/node")
 
     #
     api.add_resource(NetworkResource, "/api/network", "/api/network/<id>")
