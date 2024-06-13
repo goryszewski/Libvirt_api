@@ -1,3 +1,4 @@
+import subprocess
 from flask_restful import Resource
 from flask import request
 from sqlalchemy.sql import func
@@ -50,6 +51,11 @@ class HddResource(Resource):
         db["session"].refresh(hdd)
 
         db["session"].commit()
+
+        cmd = ["qemu-img","create","-f","qcow2",f"{hdd.path}/{hdd.id}.qcow2",f"{hdd.size}G"]
+        logging.info(cmd)
+        result = subprocess.run(cmd, stdout=subprocess.PIPE)
+        logging.info(result)
 
         return self._return(hdd.id)
 

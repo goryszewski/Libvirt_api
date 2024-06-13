@@ -1,0 +1,32 @@
+# POST https://example.com/comments HTTP/1.1
+# content-type: application/json
+
+# {
+#     "name": "sample",
+#     "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+# }
+
+### GET ALL DISK
+GET http://127.0.0.1:8050/api/hdd
+
+
+### GET Disk ID 1
+GET http://127.0.0.1:8050/api/hdd/1
+
+
+### POST new disk
+
+POST http://127.0.0.1:8050/api/hdd  HTTP/1.1
+content-type: application/json
+
+{
+        "size": "8",
+        "path": "/var/lib/libvirt/images"
+}
+
+### DELETE new disk
+
+DELETE http://127.0.0.1:8050/api/hdd/5
+
+
+###

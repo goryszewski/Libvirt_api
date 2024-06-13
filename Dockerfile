@@ -14,6 +14,7 @@ RUN pip3 install -r req.txt
 
 RUN apt update && apt install libvirt-clients libvirt-dev -y
 RUN apt update && apt install python3-dev python3-libxml2 xml-core libxml2 libxml2-dev libxslt-dev -y
+RUN apt install qemu-utils -y
 COPY ["req-test.txt" ,"./"]
 RUN pip3 install -r req-test.txt
 COPY . .
