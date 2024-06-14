@@ -29,4 +29,16 @@ content-type: application/json
 DELETE http://127.0.0.1:8050/api/hdd/5
 
 
+### Attach disk
+
+GET http://127.0.0.1:8050/api/hdd/6/vm/master01.autok8s.xyz
+
+
+###
+
+### Detach disk
+
+DELETE http://127.0.0.1:8050/api/hdd/6/vm/master01.autok8s.xyz
+
+
 ###

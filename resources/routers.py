@@ -4,6 +4,7 @@ from .vms import VirtualMachineResource, Cloud
 from .task import Tasks, Task
 from .interfaces import InterfaceResource
 from .loadbalancer import Loadbalancer
+from .bind import BindHddResource
 
 
 from .auth import LoginApi
@@ -25,6 +26,7 @@ def initialize_routes(api):
     #
     api.add_resource(NetworkResource, "/api/network", "/api/network/<id>")
     api.add_resource(HddResource, "/api/hdd", "/api/hdd/<id>")
+    api.add_resource(BindHddResource, "/api/hdd/<hdd_id>/vm/<vm_id>")
     api.add_resource(Loadbalancer, "/api/lb", "/api/lb/<namespace>/<name>")
 
     api.add_resource(Cloud, "/api/cloud/vms")
