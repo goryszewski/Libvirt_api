@@ -1,19 +1,17 @@
 from .network import NetworkResource
-from .hdd import HddResource
 from .vms import VirtualMachineResource, Cloud
 from .task import Tasks, Task
 from .interfaces import InterfaceResource
 from .loadbalancer import Loadbalancer
-from .bind import BindHddResource
-
-
 from .auth import LoginApi
-
 from .k8s import Node
 from .user import Users, User
+from .route_v2 import initv2
 
 
 def initialize_routes(api):
+    initv2(api=api)
+
     # V1
     api.add_resource(LoginApi, "/api/v1/auth")
 
@@ -25,8 +23,7 @@ def initialize_routes(api):
 
     #
     api.add_resource(NetworkResource, "/api/network", "/api/network/<id>")
-    api.add_resource(HddResource, "/api/hdd", "/api/hdd/<id>")
-    api.add_resource(BindHddResource, "/api/hdd/<hdd_id>/vm/<vm_id>")
+
     api.add_resource(Loadbalancer, "/api/lb", "/api/lb/<namespace>/<name>")
 
     api.add_resource(Cloud, "/api/cloud/vms")

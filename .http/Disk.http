@@ -7,7 +7,7 @@
 # }
 
 ### GET ALL DISK
-GET http://127.0.0.1:8050/api/hdd
+GET http://127.0.0.1:8050/api/v2/hdd
 
 
 ### GET Disk ID 1
