@@ -11,12 +11,12 @@ GET http://127.0.0.1:8050/api/v2/hdd
 
 
 ### GET Disk ID 1
-GET http://127.0.0.1:8050/api/hdd/1
+GET http://127.0.0.1:8050/api/v2/hdd/1
 
 
 ### POST new disk
 
-POST http://127.0.0.1:8050/api/hdd  HTTP/1.1
+POST http://127.0.0.1:8050/api/v2/hdd  HTTP/1.1
 content-type: application/json
 
 {
@@ -26,19 +26,19 @@ content-type: application/json
 
 ### DELETE new disk
 
-DELETE http://127.0.0.1:8050/api/hdd/5
+DELETE http://127.0.0.1:8050/api/v2/hdd/7
 
 
 ### Attach disk
 
-GET http://127.0.0.1:8050/api/hdd/6/vm/master01.autok8s.xyz
+GET http://127.0.0.1:8050/api/v2/hdd/6/vm/master01.autok8s.xyz
 
 
 ###
 
 ### Detach disk
 
-DELETE http://127.0.0.1:8050/api/hdd/6/vm/master01.autok8s.xyz
+DELETE http://127.0.0.1:8050/api/v2/hdd/6/vm/master01.autok8s.xyz
 
 
 ###

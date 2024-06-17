@@ -15,9 +15,11 @@ class BindHddResource(Resource):
 
     def get(self, hdd_id,vm_id):
         cmd=["virsh","attach-disk","--domain",vm_id,f"/var/lib/libvirt/images/{hdd_id}.qcow2","--target","vdb","--persistent"]
-        logging.info(cmd)
         result = subprocess.run(cmd, stdout=subprocess.PIPE)
-        logging.info(result)
+
+        if (result.returncode != 0):
+            return {"ERROR":result.returncode },501
+
         result ={
             "test":"ok",
             "hdd_id":hdd_id,
@@ -28,9 +30,11 @@ class BindHddResource(Resource):
 
     def delete(self, hdd_id,vm_id):
         cmd = ["virsh","detach-disk","--domain",vm_id,f"/var/lib/libvirt/images/{hdd_id}.qcow2","--persistent"]
-        logging.info(cmd)
         result = subprocess.run(cmd, stdout=subprocess.PIPE)
-        logging.info(result)
+
+        if (result.returncode != 0):
+            return {"ERROR":result.returncode },501
+
         result ={
             "test":"ok",
             "hdd_id":hdd_id,
