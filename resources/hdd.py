@@ -52,7 +52,7 @@ class HddResource(Resource):
 
         db["session"].commit()
 
-        cmd = ["qemu-img","create","-f","qcow2",f"{hdd.path}/{hdd.id}.qcow2",f"{hdd.size}G"]
+        cmd = ["qemu-img","create","-f","qcow2",f"/var/lib/libvirt/images/{hdd.id}.qcow2",f"{hdd.size}G"]
         logging.info(cmd)
         result = subprocess.run(cmd, stdout=subprocess.PIPE)
         logging.info(result)

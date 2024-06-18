@@ -20,25 +20,44 @@ POST http://127.0.0.1:8050/api/v2/hdd  HTTP/1.1
 content-type: application/json
 
 {
-        "size": "8",
-        "path": "/var/lib/libvirt/images"
+        "size": "9"
 }
 
 ### DELETE new disk
 
-DELETE http://127.0.0.1:8050/api/v2/hdd/7
+DELETE http://127.0.0.1:8050/api/v2/hdd/16
 
 
 ### Attach disk
 
-GET http://127.0.0.1:8050/api/v2/hdd/6/vm/master01.autok8s.xyz
+GET http://127.0.0.1:8050/api/v2/hdd/17/vm/lbexternal01.autok8s.xyz
 
 
 ###
 
 ### Detach disk
 
-DELETE http://127.0.0.1:8050/api/v2/hdd/6/vm/master01.autok8s.xyz
+DELETE http://127.0.0.1:8050/api/v2/hdd/17/vm/lbexternal01.autok8s.xyz
 
+
+###GOOD
+
+get http://127.0.0.1:8050/api/v2/node/lbexternal01.autok8s.xyz/hdd/19
+
+
+###BAD
+
+get http://127.0.0.1:8050/api/v2/node/lbexternal01.autok8s.xyz/hdd
 
 ###
+
+put http://127.0.0.1:8050/api/v2/node/lbexternal01.autok8s.xyz/hdd/17
+
+###
+put http://127.0.0.1:8050/api/v2/node/lbexternal01.autok8s.xyz/hdd/18
+
+###
+
+delete http://127.0.0.1:8050/api/v2/node/lbexternal01.autok8s.xyz/hdd/17
+###
+delete http://127.0.0.1:8050/api/v2/node/lbexternal01.autok8s.xyz/hdd/18
