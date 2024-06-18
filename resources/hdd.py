@@ -63,5 +63,11 @@ class HddResource(Resource):
         update_payload = dict(status=2, updatedAt=func.now())
         hdd = Hdd.query.where(Hdd.id == id).update(update_payload)
         db["session"].commit()
+
+        cmd = ["rm","-rf",f"/var/lib/libvirt/images/{id}.qcow2"]
+        logging.info(cmd)
+        result = subprocess.run(cmd, stdout=subprocess.PIPE)
+        logging.info(result)
+
         logging.info(f"Output update: {hdd}")
         return {}, 200
