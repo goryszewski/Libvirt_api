@@ -51,10 +51,10 @@ get http://127.0.0.1:8050/api/v2/node/lbexternal01.autok8s.xyz/hdd
 
 ###
 
-put http://127.0.0.1:8050/api/v2/node/lbexternal01.autok8s.xyz/hdd/17
+put http://127.0.0.1:8050/api/v2/node/master01.autok8s.xyz/hdd/17
 
 ###
-put http://127.0.0.1:8050/api/v2/node/lbexternal01.autok8s.xyz/hdd/18
+put http://127.0.0.1:8050/api/v2/node/worker01.autok8s.xyz/hdd/18
 
 ###
 

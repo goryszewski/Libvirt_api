@@ -1,3 +1,4 @@
+import json
 import libvirt
 import libxml2
 from typing import List
@@ -40,9 +41,64 @@ class Disk:
         return xml
 
 
+class NetworkInterface:
+    def __init__(self, name: any, value: any) -> None:
+        self.name = name
+        self.value = value["addrs"][0]["addr"]
+        self.mac = value["hwaddr"]
+        # print(value)
+        # self._parseNetworkInterface()
+
+    def ToJson(self):
+        return {"name": self.name, "value": self.value, "mac": self.mac}
+
+    def __str__(self):
+        return self._ToJson()
+
+    def __repr__(self):
+        return self._ToJson()
+
+
 class VM:
     def __init__(self, vm: libvirt.virDomain) -> None:
         self.vm = vm
+        self._parseVM()
+
+    def _parseVM(self) -> None:
+        self.id = self.vm.ID()
+        self.name = self.vm.name()
+        self.OSType = self.vm.OSType()
+        self.hasCurrentSnapshot = self.vm.hasCurrentSnapshot()
+        self.net = []
+        if self.vm.isActive():
+            self.hostname = self.vm.hostname()
+            self.time = self.vm.getTime()
+            self.net = self._PrepNetwork()
+
+        self.state = self.vm.state()  # ​state, reason
+        self.info = self.vm.info()  # ​state, maxmem, mem, cpus, cput
+
+    def _PrepNetwork(self) -> List[NetworkInterface]:
+        output = []
+        for name, value in self.vm.interfaceAddresses(
+            libvirt.VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_AGENT, 0
+        ).items():
+            if "cali" in name or name in ["lo"]:
+                continue
+
+            output.append(NetworkInterface(name=name, value=value))
+        return output
+
+    def ToJson(self):
+        output = {
+            "id": self.id,
+            "name": self.name,
+            "network": [item.ToJson() for item in self.net],
+            "type": self.OSType,
+            "disks": [disk.ToJson() for disk in self.getDisks()],
+        }
+
+        return output
 
     def getDiskByPath(self, path: str) -> Disk:
         disks = self.getDisks()
@@ -129,13 +185,24 @@ class Libvirt:
     def __init__(self):
         self.conn = libvirt.open("qemu:///system")
 
+    def getVmByName(self, name) -> VM:
+        vms = self.GetVms()
+        for vm in vms:
+            if vm.name == name:
+                return vm
 
-    def getByName(self, name):
+    def GetVms(self) -> List[VM]:
+        output = []
         vms = self.conn.listAllDomains(0)
         for vm in vms:
-            if vm.name() == name:
-                return VM(vm)
+            tmp = desc(vm)
+            if not tmp:
+                continue
+            elif not "nodeK8S" in tmp[0].content:
+                continue
 
+            output.append(VM(vm))
+        return output
 
     def get(self):
         result = []
