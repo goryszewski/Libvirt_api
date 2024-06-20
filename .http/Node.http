@@ -5,3 +5,7 @@ get http://127.0.0.1:8050/api/v2/node/master01.autok8s.xyz
 ###
 
 get http://127.0.0.1:8050/api/v2/node
+
+###
+
+get http://127.0.0.1:8050/api/v2/metadata

@@ -24,11 +24,11 @@ class Disk:
         self.fun = self.disk.xpathEval("address/@function")[0].content.split("x")[1]
         self.slot = self.disk.xpathEval("address/@slot")[0].content.split("x")[1]
         self.target_dev = self.disk.xpathEval("target/@dev")[0].content
-
-        self.address = f"{self.domain}:{self.bus}:{self.slot}:{self.fun}"
+        self.id = self.path.split("/")[5].split(".")[0]
+        self.address = f"{self.domain}:{self.bus}:{self.slot}.{self.fun}"
 
     def ToJson(self) -> dict:
-        return {"path": self.path, "target": self.target_dev, "address": self.address}
+        return {"id":self.id,"path": self.path, "target": self.target_dev, "address": self.address}
 
     def xml(self) -> str:
         xml = f"""
@@ -125,7 +125,7 @@ class VM:
             return True
         return False
 
-    def AttachDisk(self, hdd_id: str) -> bool:
+    def AttachDisk(self, hdd_id: str) -> Disk:
         if self.IsDiskAttach(hdd_id):
             return False
 
@@ -142,7 +142,9 @@ class VM:
         </disk>
         """
         self.vm.attachDevice(xml)
-        return True
+        path = f"/var/lib/libvirt/images/{hdd_id}.qcow2"
+        disk = self.getDiskByPath(path)
+        return disk
 
     def getDisks(self) -> List[Disk]:
         output = []

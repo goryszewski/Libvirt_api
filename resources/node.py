@@ -42,10 +42,10 @@ class V2_NodeBindDisk(Resource):
         if not hdd_id:
             return {}, 501
         vm = self.conn.getVmByName(name)
-        isOk = vm.AttachDisk(hdd_id)
-        if not isOk:
+        disk = vm.AttachDisk(hdd_id)
+        if not disk:
             return {}, 404
-        return {}, 200
+        return disk.ToJson(), 200
 
     def delete(self, name: str, hdd_id: str = None):
         if not hdd_id:
