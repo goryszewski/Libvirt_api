@@ -53,11 +53,12 @@ class HddResource(Resource):
         db["session"].commit()
 
         cmd = ["qemu-img","create","-f","qcow2",f"/var/lib/libvirt/images/{hdd.id}.qcow2",f"{hdd.size}G"]
-        logging.info(cmd)
-        result = subprocess.run(cmd, stdout=subprocess.PIPE)
-        logging.info(result)
 
-        return self._return(hdd.id)
+        result = subprocess.run(cmd, stdout=subprocess.PIPE)
+        if result.returncode == 0:
+            return self._return(hdd.id)
+
+        return {},500
 
     def delete(self, id):
         update_payload = dict(status=2, updatedAt=func.now())
@@ -65,9 +66,9 @@ class HddResource(Resource):
         db["session"].commit()
 
         cmd = ["rm","-rf",f"/var/lib/libvirt/images/{id}.qcow2"]
-        logging.info(cmd)
-        result = subprocess.run(cmd, stdout=subprocess.PIPE)
-        logging.info(result)
 
-        logging.info(f"Output update: {hdd}")
-        return {}, 200
+        result = subprocess.run(cmd, stdout=subprocess.PIPE)
+        if result.returncode == 0:
+            return {},200
+
+        return {},500
