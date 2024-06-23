@@ -14,13 +14,13 @@ class HddResource(Resource):
         self.schema = HddSchema()
         self.schemaM = HddSchema(many=True)
 
-    def _return(self, id):
+    def _return(self, id: int):
         T = Hdd.query.where(Hdd.id == id).one()
         result = self.schema.dump(T)
         print(result)
         return result, 200
 
-    def get(self, id=None):
+    def get(self, id:int):
         hdd = []
         statuscode = 200
 
@@ -36,9 +36,22 @@ class HddResource(Resource):
 
         return result, statuscode
 
-    def post(self, id=None):
+    def put(self, id: int):
+        payload = request.get_json()
+        error = self.schema.validate(payload)
+        if error:
+            return error, 422
+        hdd = Hdd(**self.schema.load(payload))
+        cmd = ["qemu-img","resize","-f","qcow2","-q",f"/var/lib/libvirt/images/{id}.qcow2",f"{hdd.size}G"]
+        result = subprocess.run(cmd, stdout=subprocess.PIPE)
+        print(result.stdout)
+        if result.returncode == 0:
+            return {},200
+
+        return {},500
+    def post(self, id:int=0):
         logging.info(request.get_json())
-        if id != None:
+        if id != 0:
             return "ID not expcted", 501
         payload = request.get_json()
         error = self.schema.validate(payload)
@@ -60,7 +73,7 @@ class HddResource(Resource):
 
         return {},500
 
-    def delete(self, id):
+    def delete(self, id:int):
         update_payload = dict(status=2, updatedAt=func.now())
         hdd = Hdd.query.where(Hdd.id == id).update(update_payload)
         db["session"].commit()
