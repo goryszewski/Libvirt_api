@@ -1,3 +1,8 @@
+import libxml2
+
+TARGET_DEV_DISK = ["vdb", "vdc", "vdd", "vde", "vdf", "vdg", "vdh", "vdi"]
+
+
 class Iterable:
     def __init__(self) -> None:
         self.i = 0
@@ -15,3 +20,9 @@ class Iterable:
         self.i = 0
 
         raise StopIteration
+
+
+def desc(vm):
+    xmldesc = vm.XMLDesc(0)
+    doc = libxml2.parseDoc(xmldesc).xpathNewContext()
+    return doc.xpathEval("/domain/description")

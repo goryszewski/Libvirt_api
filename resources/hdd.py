@@ -20,7 +20,7 @@ class HddResource(Resource):
         print(result)
         return result, 200
 
-    def get(self, id:int):
+    def get(self, id: int):
         hdd = []
         statuscode = 200
 
@@ -42,14 +42,23 @@ class HddResource(Resource):
         if error:
             return error, 422
         hdd = Hdd(**self.schema.load(payload))
-        cmd = ["qemu-img","resize","-f","qcow2","-q",f"/var/lib/libvirt/images/{id}.qcow2",f"{hdd.size}G"]
+        cmd = [
+            "qemu-img",
+            "resize",
+            "-f",
+            "qcow2",
+            "-q",
+            f"/var/lib/libvirt/images/{id}.qcow2",
+            f"{hdd.size}G",
+        ]
         result = subprocess.run(cmd, stdout=subprocess.PIPE)
         print(result.stdout)
         if result.returncode == 0:
-            return {},200
+            return {}, 200
 
-        return {},500
-    def post(self, id:int=0):
+        return {}, 500
+
+    def post(self, id: int = 0):
         logging.info(request.get_json())
         if id != 0:
             return "ID not expcted", 501
@@ -65,23 +74,30 @@ class HddResource(Resource):
 
         db["session"].commit()
 
-        cmd = ["qemu-img","create","-f","qcow2",f"/var/lib/libvirt/images/{hdd.id}.qcow2",f"{hdd.size}G"]
+        cmd = [
+            "qemu-img",
+            "create",
+            "-f",
+            "qcow2",
+            f"/var/lib/libvirt/images/{hdd.id}.qcow2",
+            f"{hdd.size}G",
+        ]
 
         result = subprocess.run(cmd, stdout=subprocess.PIPE)
         if result.returncode == 0:
             return self._return(hdd.id)
 
-        return {},500
+        return {}, 500
 
-    def delete(self, id:int):
+    def delete(self, id: int):
         update_payload = dict(status=2, updatedAt=func.now())
         hdd = Hdd.query.where(Hdd.id == id).update(update_payload)
         db["session"].commit()
 
-        cmd = ["rm","-rf",f"/var/lib/libvirt/images/{id}.qcow2"]
+        cmd = ["rm", "-rf", f"/var/lib/libvirt/images/{id}.qcow2"]
 
         result = subprocess.run(cmd, stdout=subprocess.PIPE)
         if result.returncode == 0:
-            return {},200
+            return {}, 200
 
-        return {},500
+        return {}, 500
