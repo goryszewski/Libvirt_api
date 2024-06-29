@@ -14,6 +14,8 @@ class Libvirt:
         for vm in vms:
             if vm.name == name:
                 return vm
+        return None
+
 
     def GetVms(self) -> List[VM]:
         output = []
@@ -28,7 +30,7 @@ class Libvirt:
             output.append(VM(vm))
         return output
 
-    def get(self):
+    def get(self): # DEP
         result = []
         vms = self.conn.listAllDomains(0)
 

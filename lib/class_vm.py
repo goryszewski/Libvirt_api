@@ -44,7 +44,7 @@ class VM:
         output = {
             "id": self.id,
             "name": self.name,
-            "Interface": [item.ToJson() for item in self.n],
+            "interface": [item.ToJson() for item in self.n],
             "type": self.OSType,
             "disks": [disk.ToJson() for disk in self.getDisks()],
         }

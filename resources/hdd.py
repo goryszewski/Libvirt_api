@@ -20,7 +20,7 @@ class HddResource(Resource):
         print(result)
         return result, 200
 
-    def get(self, id: int):
+    def get(self, id: int=None):
         hdd = []
         statuscode = 200
 

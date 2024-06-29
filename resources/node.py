@@ -12,6 +12,10 @@ class V2_Node(Resource):
     def get(self, name: str = None):
         if name:
             vm = self.conn.getVmByName(name)
+
+            if not vm:
+                return {},404
+
             return vm.ToJson(), 200
 
         vms = self.conn.GetVms()
