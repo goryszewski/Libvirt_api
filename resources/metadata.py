@@ -8,6 +8,6 @@ class V2_Metadata(Resource):
         self.conn = Libvirt()
 
     def get(self):
-        # self.conn.getVmByIp()
+        vm = self.conn.getVmByIp(request.remote_addr)
 
-        return request.remote_addr
+        return vm

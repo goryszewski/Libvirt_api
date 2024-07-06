@@ -4,7 +4,6 @@ from .task import Tasks, Task
 from .interfaces import InterfaceResource
 from .loadbalancer import Loadbalancer
 from .auth import LoginApi
-from .k8s import Node
 from .user import Users, User
 from .route_v2 import initv2
 
@@ -17,10 +16,6 @@ def initialize_routes(api):
 
     # api.add_resource(NetworkResource, "/api/v1/network", "/api/v1/network/<id>")
     # api.add_resource(Loadbalancer, "/api/v1/lb", "/api/v1/lb/<namespace>/<name>")
-    #    api.add_resource(Node, "/api/v1/node", "/api/v1/node/<name>")
-
-    api.add_resource(Node, "/api/v1/k8s/node")
-
     #
     api.add_resource(NetworkResource, "/api/network", "/api/network/<id>")
 

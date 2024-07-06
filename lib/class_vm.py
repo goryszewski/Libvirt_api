@@ -19,8 +19,6 @@ class VM:
         self.hasCurrentSnapshot = self.vm.hasCurrentSnapshot()
         self.net = []
         self.n = self.getNetworks()
-        for net in self.n:
-            print(net.ToJson())
 
         if self.vm.isActive():
             self.hostname = self.vm.hostname()
@@ -32,7 +30,6 @@ class VM:
 
     def _PrepNetwork(self) -> None:
         for network in self.n:
-            print(network.mac)
             for name, value in self.vm.interfaceAddresses(
                 libvirt.VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_AGENT, 0
             ).items():

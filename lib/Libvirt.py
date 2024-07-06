@@ -12,10 +12,17 @@ class Libvirt:
     def getVmByName(self, name) -> VM:
         vms = self.GetVms()
         for vm in vms:
-            if vm.name == name:
+            if vm.name == name or name in vm.name:
                 return vm
         return None
 
+    def getVmByIp(self, ip) -> VM:
+        vms = self.GetVms()
+        for vm in vms:
+            for net in vm.n:
+                if net.ip == ip:
+                    return vm.ToJson()
+        return None
 
     def GetVms(self) -> List[VM]:
         output = []
@@ -30,7 +37,7 @@ class Libvirt:
             output.append(VM(vm))
         return output
 
-    def get(self): # DEP
+    def get(self):  # DEP
         result = []
         vms = self.conn.listAllDomains(0)
 
