@@ -6,10 +6,12 @@ from .loadbalancer import Loadbalancer
 from .auth import LoginApi
 from .user import Users, User
 from .route_v2 import initv2
+from .route_acme import route_acme
 
 
 def initialize_routes(api):
     initv2(api=api)
+    route_acme(api=api) # POC
 
     # V1
     api.add_resource(LoginApi, "/api/v1/auth")
