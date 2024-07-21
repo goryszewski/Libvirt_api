@@ -17,6 +17,8 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+    depends_on:
+      - mongo
   mongo:
     labels:
       docker: 123
@@ -28,6 +30,7 @@ services:
     volumes:
       - mongoDBdata:/data/db
   mysql:
+    restart: always
     image: "mysql:latest"
     ports:
       - 3306:3306
@@ -69,6 +72,9 @@ services:
     secrets:
       - db_root_password
       - db_password
+    depends_on:
+      - mysql
+      - mongo
 
   # looper:
   #   restart: always

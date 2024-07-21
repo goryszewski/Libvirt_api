@@ -19,6 +19,7 @@ class Loadbalancer(Resource):
 
         return f"{network}.{len(items)+1}"
 
+    # list all or first
     def get(self, name=None, namespace=None):
         if name and namespace:
             all = LoadBalacnerModel.objects(name=name, namespace=namespace).first()

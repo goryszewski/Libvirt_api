@@ -1,0 +1,46 @@
+### GET ALL LB
+GET http://127.0.0.1:8050/api/lb
+
+### CREATE LB
+POST http://127.0.0.1:8050/api/lb
+content-type: application/json
+
+{
+    "name": "testvc",
+    "namespace": "testvc",
+    "ports": [
+        {
+        "name": "name-of-service-port",
+        "protocol": "TCP",
+        "port": 80,
+        "nodeport": 32179
+        },
+        {
+        "name": "name-of-service-port2",
+        "protocol": "TCP",
+        "port": 443,
+        "nodeport": 31268
+        }
+    ],
+    "nodes": [
+        {
+        "name": "master01",
+        "external": "192.168.100.185",
+        "internal": "10.17.3.41"
+        },
+        {
+        "name": "worker01",
+        "external": "192.168.100.194",
+        "internal": "10.17.3.113"
+        }
+    ]
+}
+
+### DELETE LB
+DELETE http://127.0.0.1:8050/api/lb
+content-type: application/json
+
+{
+    "name": "testvc",
+    "namespace": "testvc"
+}
