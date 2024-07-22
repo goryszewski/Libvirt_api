@@ -1,9 +1,13 @@
+.PHONY: clean build run re
 
 clean:
 	docker compose down
-	docker rm $(shell docker ps -a --format {{.ID}}) --force | exit 0
+	-docker rm $(shell docker ps -a --format {{.ID}}) --force
 
-up:
-	docker compose up  --build
+build:
+	docker compose build
 
-re: clean up
+run:
+	docker compose up
+
+re: clean build run
