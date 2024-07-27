@@ -1,0 +1,23 @@
+### GET ALL DISK
+GET http://127.0.0.1:8050/acme/directory
+
+###
+POST http://127.0.0.1:8050/acme/new-account HTTP/1.1
+Content-Type: application/jose+json
+
+{
+  "protected": base64url({
+    "alg": "ES256",
+    "jwk": {},
+    "nonce": "6S8IqOGY7eL2lsGoTZYifg",
+    "url": "http://127.0.0.1:8050/acme/new-account"
+  }),
+  "payload": base64url({
+    "termsOfServiceAgreed": true,
+    "contact": [
+      "mailto: admin@autok8s.xyz",
+      "tel: 1234567890"
+    ]
+  }),
+  "signature": "RZPOnYoPs1PhjszF...-nh6X1qtOFPB519I"
+}
