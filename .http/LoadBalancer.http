@@ -25,13 +25,11 @@ content-type: application/json
     "nodes": [
         {
         "name": "master01",
-        "external": "192.168.100.185",
-        "internal": "10.17.3.41"
+        "ip": "192.168.100.185"
         },
         {
         "name": "worker01",
-        "external": "192.168.100.194",
-        "internal": "10.17.3.113"
+        "ip": "192.168.100.194"
         }
     ]
 }
