@@ -1,4 +1,8 @@
-### GET ALL DISK
+###
+
+POST http://127.0.0.1:8050/acme/certificate/122
+
+### GET
 GET http://127.0.0.1:8050/acme/directory
 
 ###
