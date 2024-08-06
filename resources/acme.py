@@ -4,6 +4,8 @@ import base64, json
 from lib.logging import logging
 from datetime import datetime, timedelta
 
+from Model.AcmeAccount import AccountModel, AccountSchema
+
 url = "http://10.17.3.1:8050/acme"
 
 
@@ -36,21 +38,36 @@ class Directory(Resource):
 
 class NewAccount(Resource):
     def __init__(self):
-        pass
+        self.account_schema = AccountSchema()
 
     def get(self):
         return "", 501
 
-    def post(sefl):
+    def post(self):
         request_json = request.get_json()
-
-        protected = decode_base64_fix(request_json["protected"])
-        # logging.info(protected)
+        headers = dict(request.headers)
+        # protected = decode_base64_fix(request_json["protected"])
+        # logging.info(headers)
 
         payload = json.loads(decode_base64_fix(request_json["payload"]))
 
-        output = {"contact": payload["contact"], "status": "valid", "orders": ""}
-        return output, 201
+        error = self.account_schema.validate(payload)
+        if error:
+            logging.error(error)
+            return error, 422
+
+        account = AccountModel(**self.account_schema.dump(payload))
+        account.save()
+
+        output = {
+            "contact": payload["contact"],
+            "status": "valid",
+            "orders": f"{url}/account/{account.id}/orders",
+        }
+        logging.info(output)
+        response = make_response(jsonify(output), 201)
+        response.headers["Replay-Nonce"] = "6S8dQIvS7eL2ls4K2fB2sz-9I23cZJq_iBYjGn4Z7H8"
+        return response
 
     def put(self):
         return "", 501

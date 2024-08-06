@@ -1,14 +1,13 @@
-from mongoengine import (
-    Document,
-    StringField,
-)
+from mongoengine import Document, StringField, ListField, BooleanField
 
 from marshmallow import Schema, fields
 
 
-class Account(Document):
-    email = StringField()
+class AccountModel(Document):
+    contact = ListField(StringField())
+    termsOfServiceAgreed = BooleanField()
 
 
-class Account(Schema):
-    email = fields.Str()
+class AccountSchema(Schema):
+    contact = fields.List(fields.Str())
+    termsOfServiceAgreed = fields.Bool()
