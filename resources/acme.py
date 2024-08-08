@@ -56,16 +56,23 @@ class NewAccount(Resource):
             logging.error(error)
             return error, 422
 
-        account = AccountModel(**self.account_schema.dump(payload))
-        account.save()
+        account = AccountModel.objects(**payload).first()
+
+        rc = 501
+        if account:
+            rc = 200
+        else:
+            rc = 201
+            account = AccountModel(**self.account_schema.dump(payload))
+            account.save()
 
         output = {
-            "contact": payload["contact"],
+            "contact": account.contact,
             "status": "valid",
             "orders": f"{url}/account/{account.id}/orders",
         }
-        logging.info(output)
-        response = make_response(jsonify(output), 201)
+
+        response = make_response(jsonify(output), rc)
         response.headers["Replay-Nonce"] = "6S8dQIvS7eL2ls4K2fB2sz-9I23cZJq_iBYjGn4Z7H8"
         return response
 

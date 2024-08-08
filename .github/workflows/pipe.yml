@@ -1,43 +1,43 @@
-name: CI Libvirt-api - local
+# name: CI Libvirt-api - local
 
-on: [push]
+# on: [push]
 
-jobs:
-  build:
-    runs-on: self-hosted
+# jobs:
+#   build:
+#     runs-on: self-hosted
 
-    steps:
-      - name: Check Repo
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Check Repo
+#         uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          config-inline: |
-            [registry."repo.internal:5000"]
-              http = true
-              insecure = true
+#       - name: Set up Docker Buildx
+#         id: buildx
+#         uses: docker/setup-buildx-action@v3
+#         with:
+#           config-inline: |
+#             [registry."repo.internal:5000"]
+#               http = true
+#               insecure = true
 
-      - name: Build and push to local registry libvirt_api
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
-          tags: repo.internal:5000/libvirt_api:latest
+#       - name: Build and push to local registry libvirt_api
+#         uses: docker/build-push-action@v3
+#         with:
+#           context: .
+#           push: true
+#           tags: repo.internal:5000/libvirt_api:latest
 
-      - name: Inspect libvirt_api
-        run: |
-          docker buildx imagetools inspect repo.internal:5000/libvirt_api:latest
+#       - name: Inspect libvirt_api
+#         run: |
+#           docker buildx imagetools inspect repo.internal:5000/libvirt_api:latest
 
-      - name: Build and push to local registry libvirt_looper
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: Dockerfile-looper
-          push: true
-          tags: repo.internal:5000/libvirt_looper:latest
+#       - name: Build and push to local registry libvirt_looper
+#         uses: docker/build-push-action@v3
+#         with:
+#           context: .
+#           file: Dockerfile-looper
+#           push: true
+#           tags: repo.internal:5000/libvirt_looper:latest
 
-      - name: Inspect libvirt_looper
-        run: |
-          docker buildx imagetools inspect repo.internal:5000/libvirt_looper:latest
+#       - name: Inspect libvirt_looper
+#         run: |
+#           docker buildx imagetools inspect repo.internal:5000/libvirt_looper:latest
