@@ -2,11 +2,21 @@ from flask_restful import Resource
 from flask import request, jsonify, Response, make_response
 import base64, json
 from lib.logging import logging
+from lib.ca import sign_certificate_request
 from datetime import datetime, timedelta
 
-from Model.AcmeAccount import AccountModel, AccountSchema
+from Model.AcmeAccount import (
+    AccountModel,
+    AccountSchema,
+    RequestOrderSchema,
+    OrderModel,
+    AuthorizationModel,
+    CertModel,
+)
 
-url = "http://10.17.3.1:8050/acme"
+
+URL_SERVER = "http://10.17.3.1:8050/acme"
+VALID_CRT_DAYS = 30
 
 
 def decode_base64_fix(data):
@@ -15,17 +25,29 @@ def decode_base64_fix(data):
     return payload.decode()
 
 
+def to_json(items):
+    output = []
+    for item in items:
+        tmp = json.loads(item.to_json())
+        if "_id" in tmp:
+            del tmp["_id"]
+        if "objectid" in tmp:
+            del tmp["objectid"]
+        output.append(tmp)
+    return output
+
+
 class Directory(Resource):
     def __init__(self):
         pass
 
     def get(self):
         output = {
-            "newNonce": f"{url}/new-nonce",
-            "newAccount": f"{url}/new-account",
-            "newOrder": f"{url}/new-order",
-            "revokeCert": f"{url}/revoke-cert",
-            "keyChange": f"{url}/key-change",
+            "newNonce": f"{URL_SERVER}/new-nonce",
+            "newAccount": f"{URL_SERVER}/new-account",
+            "newOrder": f"{URL_SERVER}/new-order",
+            "revokeCert": f"{URL_SERVER}/revoke-cert",
+            "keyChange": f"{URL_SERVER}/key-change",
         }
         return output, 200
 
@@ -46,10 +68,13 @@ class NewAccount(Resource):
     def post(self):
         request_json = request.get_json()
         headers = dict(request.headers)
-        # protected = decode_base64_fix(request_json["protected"])
-        # logging.info(headers)
+        logging.debug(f" [NewAccount] - headers : {headers}")
+
+        protected = decode_base64_fix(request_json["protected"])
+        logging.debug(f" [NewAccount] - protected : {protected}")
 
         payload = json.loads(decode_base64_fix(request_json["payload"]))
+        logging.debug(f" [NewAccount] - payload : {payload}")
 
         error = self.account_schema.validate(payload)
         if error:
@@ -69,7 +94,7 @@ class NewAccount(Resource):
         output = {
             "contact": account.contact,
             "status": "valid",
-            "orders": f"{url}/account/{account.id}/orders",
+            "orders": f"{URL_SERVER}/account/{account.id}/orders",
         }
 
         response = make_response(jsonify(output), rc)
@@ -88,36 +113,18 @@ class AuthZ(Resource):
         return "", 501
 
     def post(sefl, id):
-        request_json = request.get_json()
-        # logging.info(f"id - {id}")
-        protected = decode_base64_fix(request_json["protected"])
-        # logging.info(f"protected - {protected}")
+        authz = AuthorizationModel.objects(id=id).first()
 
-        payload = decode_base64_fix(request_json["payload"])
-        # logging.info(f"payload - {payload}")
-        current_time = datetime.utcnow()
-        expires = current_time + timedelta(days=7)
-        # logging.info(f"new_time - {expires}")
-        order = 122
         output = {
-            # "status": "pending",
-            #   "status": "invalid",
-            "status": "valid",
-            "expires": expires.isoformat() + "Z",
-            "identifier": {"type": "dns", "value": "www.autok8s.xyz"},
-            "challenges": [
-                {
-                    "type": "dns-01",
-                    "url": f"{url}/challenge/{id}/http-01",
-                    # "status": "pending",
-                    "status": "valid",
-                    "token": "def456",
-                    "validation": "dns-txt-record-value",
-                }
-            ],
+            "status": authz.status,
+            "expires": authz.expires,
+            "identifier": authz.identifier,
+            "challenges": authz.challenges,
         }
+        logging.debug(f"[AuthZ] output - {output}")
+
         response = make_response(jsonify(output), 201)
-        response.headers["Location"] = f"{url}/authz/{id}"
+        response.headers["Location"] = f"{URL_SERVER}/authz/{id}"
         response.headers["Replay-Nonce"] = "6S8dQIvS7eL2ls4K2fB2sz-9I23cZJq_iBYjGn4Z7H8"
         return response
 
@@ -127,63 +134,103 @@ class Order(Resource):
         pass
 
     def post(sefl, id):
-        request_json = request.get_json()
+        authorizations_array = []
 
-        protected = decode_base64_fix(request_json["protected"])
-        # logging.info(f"protected - {protected}")
+        order = OrderModel.objects(id=id).first()
+        authorizations = AuthorizationModel.objects(orderid=str(order.id))
+        for athz in authorizations:
+            authorizations_array.append(
+                f"{URL_SERVER}/authz/{athz.id}",
+            )
 
-        payload = decode_base64_fix(request_json["payload"])
-        # logging.info(f"payload - {payload}")
-        # logging.info(f"id - {id}")
-        return {
+        output = {
             "status": "valid",
             "certificate": "base64-encoded-certificate-data",
-            "identifiers": [{"type": "dns", "value": "www.autok8s.xyz"}],
-            "authorizations": [
-                f"{url}/authz/1234567",
-            ],
-            "finalize": f"{url}/order/{id}/finalize",
-            "certificate": f"{url}/certificate/{id}",
+            "identifiers": to_json(order.identifiers),
+            "authorizations": authorizations_array,
+            "finalize": f"{URL_SERVER}/order/{order.id}/finalize",
+            "certificate": f"{URL_SERVER}/certificate/{order.id}",
         }
+        logging.debug(f"[Order] output - {output}")
+
+        response = make_response(output, 200)
+        response.headers["Location"] = f"{URL_SERVER}/order/{order.id}"
+        response.headers["Replay-Nonce"] = "6S8dQIvS7eL2ls4K2fB2sz-9I23cZJq_iBYjGn4Z7H8"
+        return response
 
 
 class NewOrder(Resource):
     def __init__(self):
-        pass
+        self.order_schema = RequestOrderSchema()
 
     def get(self):
         return "", 501
 
-    def post(sefl):
+    def post(self):
         request_json = request.get_json()
 
         protected = decode_base64_fix(request_json["protected"])
-        # logging.info(f"protected - {protected}")
+        logging.debug(f"[NewOrder] protected - {protected}")
 
-        payload = decode_base64_fix(request_json["payload"])
-        # logging.info(f"payload - {payload}")
-        current_time = datetime.now()
+        payload = json.loads(decode_base64_fix(request_json["payload"]))
+        logging.debug(f"[NewOrder] payload - {payload}")
 
+        error = self.order_schema.validate(payload)
+        if error:
+            logging.error(error)
+            return error, 500
         current_time = datetime.utcnow()
-        expires = current_time + timedelta(days=7)
-        # logging.info(f"new_time - {expires}")
+        expires = current_time + timedelta(days=VALID_CRT_DAYS)
 
-        order = 122
+        rc = 501
+        order = OrderModel.objects(**payload).first()
+        if order:
+            rc = 201
+        else:
+            order = OrderModel(
+                **self.order_schema.dump(payload),
+                status="valid",
+                expires=expires.isoformat() + "Z",
+            )
+            order.save()
+            rc = 201
+
+        # create authorizations
+        authz_array = []
+        challenges_array = []
+        identifiers = to_json(order.identifiers)
+        for identifier in identifiers:
+            challenge = {
+                "url": f"{URL_SERVER}/challenge/{order.id}/http-01",
+                "type": "http-01",
+                "status": "valid",
+                "token": "def456",
+                "validation": "dns-txt-record-value",
+            }
+            challenges_array.append(challenge)
+
+            authz = AuthorizationModel(
+                orderid=str(order.id),
+                status="valid",
+                expires=expires.isoformat() + "Z",
+                identifier=identifier,
+                challenges=challenges_array,
+                wildcard=False,
+            )
+            authz.save()
+            authz_array.append(f"{URL_SERVER}/authz/{authz.id}")
 
         output = {
-            "status": "pending",
-            "expires": expires.isoformat() + "Z",
-            "identifiers": [
-                {"type": "dns", "value": "www.autok8s.xyz"},
-            ],
-            "authorizations": [
-                f"{url}/authz/1234567",
-            ],
-            "finalize": f"{url}/order/{order}/finalize",
+            "status": order.status,
+            "expires": order.expires,
+            "identifiers": to_json(order.identifiers),
+            "authorizations": authz_array,
+            "finalize": f"{URL_SERVER}/order/{order.id}/finalize",
         }
+        logging.debug(f"[NewOrder] output - {output}")
 
-        response = make_response(jsonify(output), 201)
-        response.headers["Location"] = f"{url}/order/{order}"
+        response = make_response(jsonify(output), rc)
+        response.headers["Location"] = f"{URL_SERVER}/order/{order.id}"
         response.headers["Replay-Nonce"] = "6S8dQIvS7eL2ls4K2fB2sz-9I23cZJq_iBYjGn4Z7H8"
         return response
 
@@ -232,16 +279,38 @@ class FinalizeOrder(Resource):
         return "", 501
 
     def post(sefl, id):
-        return {
+        request_json = request.get_json()
+
+        protected = decode_base64_fix(request_json["protected"])
+        logging.debug(f"[FinalizeOrder] protected - {protected}")
+
+        payload = json.loads(decode_base64_fix(request_json["payload"]))
+        logging.debug(f"[FinalizeOrder] payload - {payload}")
+        authorizations_array = []
+
+        test = sign_certificate_request(payload["csr"])
+
+        order = OrderModel.objects(id=id).first()
+        authorizations = AuthorizationModel.objects(orderid=str(order.id))
+
+        crt = CertModel(orderid=str(order.id), cert=test)
+        crt.save()
+
+        for athz in authorizations:
+            authorizations_array.append(
+                f"{URL_SERVER}/authz/{athz.id}",
+            )
+        output = {
             "status": "valid",
             "certificate": "base64-encoded-certificate-data",
-            "identifiers": [{"type": "dns", "value": "www.autok8s.xyz"}],
-            "authorizations": [
-                f"{url}/authz/1234567",
-            ],
-            "finalize": f"{url}/order/{id}/finalize",
-            "certificate": f"{url}/certificate/{id}",
+            "identifiers": to_json(order.identifiers),
+            "authorizations": authorizations_array,
+            "finalize": f"{URL_SERVER}/order/{order.id}/finalize",
+            "certificate": f"{URL_SERVER}/certificate/{order.id}",
         }
+        response = make_response(jsonify(output), 200)
+        response.headers["Replay-Nonce"] = "6S8dQIvS7eL2ls4K2fB2sz-9I23cZJq_iBYjGn4Z7H8"
+        return response
 
 
 class Certs(Resource):
@@ -249,37 +318,15 @@ class Certs(Resource):
         pass
 
     def post(self, id):
-        cert_data = """-----BEGIN CERTIFICATE-----
-MIIFIzCCAwugAwIBAgIUDky97RyxeKWJB4rvDfsTJd9kZGIwDQYJKoZIhvcNAQEL
-BQAwGjEYMBYGA1UEAwwPSW50ZXJtaWRpYXRlIENBMB4XDTIzMDgyMjE5MzE1OVoX
-DTMzMDgxOTE5MzE1OVowGDEWMBQGA1UEAwwNS3ViZXJuZXRlcyBDQTCCAiIwDQYJ
-KoZIhvcNAQEBBQADggIPADCCAgoCggIBAMMrwapbJw70+qgm0QQJVatg3tdATdgF
-4MEi72TDiC8oGxIytWBScadTa71Y8QvlzcG+fJ+mpA4rwcKpsItf4KwVCdUrcNeY
-khQ7L7xD6eXWhQzsT2ef6qxw2uB8GCSg4dywao6jaKhj2hzvGSskI5kedhaCTnZ5
-ljV7gf+mgIelRocQPr18Ht9KdEwWGZlyMiZTFF1Y/1vYGQsraM2FTCiXpsjxjKuf
-4JG4D0ZLz/uHDcyyZWrgVX5/dLl5Lm1otkcYCnm/+hIJWZ8FDW89kcSjNRQMCB4s
-Fyt3p6l0dCgMnNYglCX7Yujf0uFigF1LsKqXUnhOGMLXpVVDW8IQ++tpem28XQK5
-FnuOO5uCsAxMd/Fx6JnbiODwcik5qh7nsqgd9ni32zuUs4zZgW7ruNFY8hBPO/6N
-48cpD9/xNazx6BLL9U0qjimDSyo0ZcqgMbAolSuOu9+POd8oS1RKYuQQlTkie6WV
-eutrlJ/LpSA2pUs1yPqq8e7e4pf4/i3jpNxNwE01rZLrD/256VmObdlqO/gjzNy8
-JlgTAmyi0T/LAIgyUuOtNIRJm+y+a/s0HoYZNHPmJg5DqRDlUdvqY/GaVzvlBa1s
-rI7MIV80vATl57w5aoFNOo0Ke5Pr6GSgScSwMbpNhN8XUY378lIdHAWXPOUzKbm1
-8x3mN4dUKYPHAgMBAAGjYzBhMA4GA1UdDwEB/wQEAwICBDAPBgNVHRMBAf8EBTAD
-AQH/MB0GA1UdDgQWBBT71G4KVH5Cf6zX77WjvhH/bu2fzDAfBgNVHSMEGDAWgBQv
-BjzOxwPixFlQ1A5Q0wArF1jmaDANBgkqhkiG9w0BAQsFAAOCAgEAhQW2qX1lsjBf
-NEniTOdIe2hyXWRhCWmLqhW2HBsY8WJchurMttmZ7vnkOxV39KNv14931CqzsJ1H
-HDd3/tX4FvJXEX9kNzY9DDnCuOdm3vwn+w6+ifKZYljWOxcwW3VKF36r/MSR4AEG
-Zf8lsEFym7j8OoCZELPs7btWEyjoupCOYto/AnESsrcrl7zKfj+gt4AoK3Tl+P4C
-JD+eprl19jAqbhNvxFeF3ZT17lrq1yHG3FgRzTDpCasBH2fj09Rcy/9OtU4PplE7
-0OIqfJtcQtuZG3iEO2HuizJ42iDTkm/ncEwd4eKjVxZYvXFDdmidxSBQtiZC36QQ
-+KbnLkSCR3eD4bgaIumDA+NOTl+i9q6BqzMv3PersbnG7z8/y9N3Jyb2YxOTYueE
-rJTUUCdy5o/Fqi68FSB/W2F2E4xEUguQENt1qAeNC8Zc2qiPS8P4rqQuwaiECUAn
-czA4GdoKjSL3K3lLoFgXu/iwCM19zwFbAQZ/wo13Xuq49w3rNd+QXB92wZHcUBa/
-qzsQeLGrixRMa4oygVkraLADwVLrQkB7tB0MdY5HOAJl8PAGMQGyv07FIkZlV+x4
-M6h12zS61lYMmwR/DGfJlhGrIiYsaE7natwvR6pRI+HH5kEXPOwJYMvWrhV2zLRe
-8r0+z2XVZJTOs+AXd3Na6pTI01qVnM0=
------END CERTIFICATE-----"""  # Przykładowy certyfikat
-        response = make_response(cert_data, 201)
+        rc = 404
+        output = ""
+
+        cert_data = CertModel.objects(orderid=str(id)).first()
+        if cert_data:
+            rc = 201
+            output = cert_data.cert
+
+        response = make_response(output, rc)
         response.mimetype = "application/pem-certificate-chain"
         return response
 

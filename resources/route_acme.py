@@ -15,23 +15,23 @@ def route_acme(api):
     api.add_resource(RevokeCert, "/acme/revoke-cert")  # POST
 
 
-# api-1            | 2024-08-05 20:15:24 INFO     10.17.3.152 - - [05/Aug/2024 20:15:24] "GET /acme/directory HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:24 INFO     10.17.3.152 - - [05/Aug/2024 20:15:24] "HEAD /acme/new-nonce HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:24 INFO     10.17.3.152 - - [05/Aug/2024 20:15:24] "POST /acme/new-account HTTP/1.1" 201 -
-# api-1            | 2024-08-05 20:15:24 INFO     10.17.3.152 - - [05/Aug/2024 20:15:24] "HEAD /acme/new-nonce HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:24 INFO     10.17.3.152 - - [05/Aug/2024 20:15:24] "POST /acme/new-order HTTP/1.1" 201 -
-# api-1            | 2024-08-05 20:15:24 INFO     10.17.3.152 - - [05/Aug/2024 20:15:24] "HEAD /acme/new-nonce HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:24 INFO     10.17.3.152 - - [05/Aug/2024 20:15:24] "POST /acme/authz/1234567 HTTP/1.1" 201 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "GET /acme/directory HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "HEAD /acme/new-nonce HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "POST /acme/new-account HTTP/1.1" 201 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "HEAD /acme/new-nonce HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "POST /acme/order/122 HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "HEAD /acme/new-nonce HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "POST /acme/authz/1234567 HTTP/1.1" 201 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "HEAD /acme/new-nonce HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "POST /acme/order/122/finalize HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "HEAD /acme/new-nonce HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "POST /acme/order/122 HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:25 INFO     10.17.3.152 - - [05/Aug/2024 20:15:25] "HEAD /acme/new-nonce HTTP/1.1" 200 -
-# api-1            | 2024-08-05 20:15:26 INFO     10.17.3.152 - - [05/Aug/2024 20:15:26] "POST /acme/certificate/122 HTTP/1.1" 201 -
+# api-1            | 2024-08-08 23:36:56 INFO     10.17.3.152 - - [08/Aug/2024 23:36:56] "GET /acme/directory HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:56 INFO     10.17.3.152 - - [08/Aug/2024 23:36:56] "HEAD /acme/new-nonce HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:56 INFO     10.17.3.152 - - [08/Aug/2024 23:36:56] "POST /acme/new-account HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:56 INFO     10.17.3.152 - - [08/Aug/2024 23:36:56] "HEAD /acme/new-nonce HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:56 INFO     10.17.3.152 - - [08/Aug/2024 23:36:56] "POST /acme/new-order HTTP/1.1" 201 -
+# api-1            | 2024-08-08 23:36:57 INFO     10.17.3.152 - - [08/Aug/2024 23:36:57] "HEAD /acme/new-nonce HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:57 INFO     10.17.3.152 - - [08/Aug/2024 23:36:57] "POST /acme/authz/66b5ff583159c75e6ec5b274 HTTP/1.1" 201 -
+# api-1            | 2024-08-08 23:36:57 INFO     10.17.3.152 - - [08/Aug/2024 23:36:57] "GET /acme/directory HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:57 INFO     10.17.3.152 - - [08/Aug/2024 23:36:57] "HEAD /acme/new-nonce HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:57 INFO     10.17.3.152 - - [08/Aug/2024 23:36:57] "POST /acme/new-account HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:57 INFO     10.17.3.152 - - [08/Aug/2024 23:36:57] "HEAD /acme/new-nonce HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:57 INFO     10.17.3.152 - - [08/Aug/2024 23:36:57] "POST /acme/order/66b5ff583159c75e6ec5b273 HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:57 INFO     10.17.3.152 - - [08/Aug/2024 23:36:57] "HEAD /acme/new-nonce HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:57 INFO     10.17.3.152 - - [08/Aug/2024 23:36:57] "POST /acme/authz/66b5ff583159c75e6ec5b274 HTTP/1.1" 201 -
+# api-1            | 2024-08-08 23:36:58 INFO     10.17.3.152 - - [08/Aug/2024 23:36:58] "HEAD /acme/new-nonce HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:58 INFO     10.17.3.152 - - [08/Aug/2024 23:36:58] "POST /acme/order/66b5ff583159c75e6ec5b273/finalize HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:58 INFO     10.17.3.152 - - [08/Aug/2024 23:36:58] "HEAD /acme/new-nonce HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:58 INFO     10.17.3.152 - - [08/Aug/2024 23:36:58] "POST /acme/order/66b5ff583159c75e6ec5b273 HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:58 INFO     10.17.3.152 - - [08/Aug/2024 23:36:58] "HEAD /acme/new-nonce HTTP/1.1" 200 -
+# api-1            | 2024-08-08 23:36:58 INFO     10.17.3.152 - - [08/Aug/2024 23:36:58] "POST /acme/certificate/66b5ff583159c75e6ec5b273 HTTP/1.1" 201 -

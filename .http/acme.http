@@ -3,7 +3,8 @@
 POST http://127.0.0.1:8050/acme/certificate/122
 
 ### GET
-GET http://127.0.0.1:8050/acme/directory
+POST http://127.0.0.1:8050/acme/order/66b5f78227752c15d1856988 HTTP/1.1
+# Content-Type: application/jose+json
 
 ###
 POST http://127.0.0.1:8050/acme/new-account HTTP/1.1
