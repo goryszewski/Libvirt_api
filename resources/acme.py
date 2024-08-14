@@ -7,7 +7,8 @@ from datetime import datetime, timedelta
 
 from Model.AcmeAccount import (
     AccountModel,
-    AccountSchema,
+    AccountProtectSchema,
+    AccountPayloadSchema,
     RequestOrderSchema,
     OrderModel,
     AuthorizationModel,
@@ -60,7 +61,8 @@ class Directory(Resource):
 
 class NewAccount(Resource):
     def __init__(self):
-        self.account_schema = AccountSchema()
+        self.account_payload_schema = AccountPayloadSchema()
+        self.account_protect_schema = AccountProtectSchema()
 
     def get(self):
         return "", 501
@@ -68,27 +70,35 @@ class NewAccount(Resource):
     def post(self):
         request_json = request.get_json()
         headers = dict(request.headers)
-        logging.debug(f" [NewAccount] - headers : {headers}")
+        logging.info(f" [NewAccount] - headers : {headers}")
 
-        protected = decode_base64_fix(request_json["protected"])
-        logging.debug(f" [NewAccount] - protected : {protected}")
+        protected = json.loads(decode_base64_fix(request_json["protected"]))
+        logging.info(f" [NewAccount] - protected : {protected}")
 
-        payload = json.loads(decode_base64_fix(request_json["payload"]))
-        logging.debug(f" [NewAccount] - payload : {payload}")
-
-        error = self.account_schema.validate(payload)
+        error = self.account_protect_schema.validate(protected)
         if error:
-            logging.error(error)
+            logging.error(f"1: {error}")
             return error, 422
 
-        account = AccountModel.objects(**payload).first()
+        payload = json.loads(decode_base64_fix(request_json["payload"]))
+        error = self.account_payload_schema.validate(payload)
+        if error:
+            logging.error(f"2: {error}")
+            return error, 422
+
+        logging.info(f" [NewAccount] - payload : {payload}")
+
+        account = AccountModel.objects(jwk=protected['jwk']['n']).first()
 
         rc = 501
         if account:
             rc = 200
         else:
+            if "onlyReturnExisting" in payload and  payload['onlyReturnExisting']:
+                rc=404
+                return {},404
             rc = 201
-            account = AccountModel(**self.account_schema.dump(payload))
+            account = AccountModel(**self.account_payload_schema.dump(payload),jwk=protected['jwk']['n'])
             account.save()
 
         output = {
