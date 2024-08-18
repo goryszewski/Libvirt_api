@@ -59,6 +59,9 @@ class Directory(Resource):
         return "", 501
 
 
+class Account(Resource):
+    def __init__(self): pass
+
 class NewAccount(Resource):
     def __init__(self):
         self.account_payload_schema = AccountPayloadSchema()
@@ -106,8 +109,8 @@ class NewAccount(Resource):
             "status": "valid",
             "orders": f"{URL_SERVER}/account/{account.id}/orders",
         }
-
         response = make_response(jsonify(output), rc)
+        response.headers["Location"] = f"{URL_SERVER}/account/{account.id}",
         response.headers["Replay-Nonce"] = "6S8dQIvS7eL2ls4K2fB2sz-9I23cZJq_iBYjGn4Z7H8"
         return response
 

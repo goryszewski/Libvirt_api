@@ -4,6 +4,7 @@ from .acme import *
 def route_acme(api):
     api.add_resource(Directory, "/acme/directory")  # Get
     api.add_resource(NewAccount, "/acme/new-account")  # POST
+    api.add_resource(Account,"/acme/account/<id>")
     api.add_resource(NewNonce, "/acme/new-nonce")
     api.add_resource(AuthZ, "/acme/authz/<id>")
     api.add_resource(Order, "/acme/order/<id>")
