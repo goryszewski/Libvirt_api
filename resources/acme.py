@@ -60,7 +60,31 @@ class Directory(Resource):
 
 
 class Account(Resource):
-    def __init__(self): pass
+    def __init__(self):
+        pass
+
+    def post(self, id):
+        headers = dict(request.headers)
+        logging.info(f" [Account] - headers : {headers}")
+
+        account = AccountModel.objects(id=id).first()
+        if account:
+            output = {
+                "status": account.status,
+                "contact": account.contact,
+                "termsOfServiceAgreed": account.termsOfServiceAgreed,
+                "orders": f"{URL_SERVER}/account/{account.id}/orders",
+            }
+            response = make_response(jsonify(output), 200)
+            return response
+        else:
+            output = {
+                "type": "urn:ietf:params:acme:error:accountDoesNotExist",
+                "detail": f"Account with ID {id} does not exist",
+                "status": 404,
+            }
+            return output, 404
+
 
 class NewAccount(Resource):
     def __init__(self):
@@ -91,17 +115,23 @@ class NewAccount(Resource):
 
         logging.info(f" [NewAccount] - payload : {payload}")
 
-        account = AccountModel.objects(jwk=protected['jwk']['n']).first()
+        account = AccountModel.objects(jwk=protected["jwk"]["n"]).first()
 
         rc = 501
         if account:
             rc = 200
         else:
-            if "onlyReturnExisting" in payload and  payload['onlyReturnExisting']:
-                rc=404
-                return {},404
+            if "onlyReturnExisting" in payload and payload["onlyReturnExisting"]:
+                output = {
+                    "type": "urn:ietf:params:acme:error:accountDoesNotExist",
+                    "detail": "No account exists with the provided key",
+                    "status": 400,
+                }
+                return output, 400
             rc = 201
-            account = AccountModel(**self.account_payload_schema.dump(payload),jwk=protected['jwk']['n'])
+            account = AccountModel(
+                **self.account_payload_schema.dump(payload), jwk=protected["jwk"]["n"]
+            )
             account.save()
 
         output = {
@@ -110,7 +140,7 @@ class NewAccount(Resource):
             "orders": f"{URL_SERVER}/account/{account.id}/orders",
         }
         response = make_response(jsonify(output), rc)
-        response.headers["Location"] = f"{URL_SERVER}/account/{account.id}",
+        response.headers["Location"] = f"{URL_SERVER}/account/{account.id}"
         response.headers["Replay-Nonce"] = "6S8dQIvS7eL2ls4K2fB2sz-9I23cZJq_iBYjGn4Z7H8"
         return response
 
