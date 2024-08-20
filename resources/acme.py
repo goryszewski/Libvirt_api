@@ -169,7 +169,7 @@ class AuthZ(Resource):
         }
         logging.info(f"[AuthZ] output - {output}")
 
-        response = make_response(jsonify(output), 201)
+        response = make_response(jsonify(output), 200)
         response.headers["Location"] = f"{URL_SERVER}/authz/{id}"
         response.headers["Replay-Nonce"] = "6S8dQIvS7eL2ls4K2fB2sz-9I23cZJq_iBYjGn4Z7H8"
         return response
@@ -190,7 +190,7 @@ class Order(Resource):
             )
 
         output = {
-            "status": "valid",
+            "status": order.status,
             "certificate": "base64-encoded-certificate-data",
             "identifiers": to_json(order.identifiers),
             "authorizations": authorizations_array,
@@ -218,6 +218,9 @@ class Challenge(Resource):
 
         challenge = ChallengeModel.objects(authzid=str(authz_id)).first()
         challenge.update(status="valid")
+
+        order = OrderModel.objects(id=authz.orderid)
+        order.update(status="ready")
 
         return {"status": "valid"}, 200
 
@@ -392,10 +395,10 @@ class Certs(Resource):
     def post(self, id):
         rc = 404
         output = ""
-
+        # TODO add chain
         cert_data = CertModel.objects(orderid=str(id)).first()
         if cert_data:
-            rc = 201
+            rc = 200
             output = cert_data.cert
 
         response = make_response(output, rc)
