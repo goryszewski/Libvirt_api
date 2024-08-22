@@ -7,6 +7,12 @@ from cryptography.hazmat.primitives import hashes
 import datetime
 
 
+def get_ca():
+    with open(".secrets/Kubernetes_CA.pem", "rb") as cert_file:
+        ca_cert = x509.load_pem_x509_certificate(cert_file.read(), default_backend())
+        return ca_cert.public_bytes(serialization.Encoding.PEM)
+
+
 def sign_certificate_request(csr_string, days=10):
     pre_decode_csr = base64.urlsafe_b64decode(csr_string + "==")
 
@@ -50,8 +56,5 @@ def sign_certificate_request(csr_string, days=10):
         )
 
     cert = cert_builder.sign(ca_private_key, hashes.SHA256(), default_backend())
-
-    with open(".secrets/newcer", "wb") as cert_file:
-        cert_file.write(cert.public_bytes(serialization.Encoding.PEM))
 
     return cert.public_bytes(serialization.Encoding.PEM)

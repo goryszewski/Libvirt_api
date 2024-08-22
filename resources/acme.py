@@ -2,7 +2,7 @@ from flask_restful import Resource
 from flask import request, jsonify, Response, make_response
 import base64, json
 from lib.logging import logging
-from lib.ca import sign_certificate_request
+from lib.ca import sign_certificate_request, get_ca
 from datetime import datetime, timedelta
 
 from Model.AcmeAccount import (
@@ -158,16 +158,28 @@ class AuthZ(Resource):
 
     def post(sefl, id):
         authz = AuthorizationModel.objects(id=id).first()
-        challenge = [
-            json.loads(ChallengeModel.objects(id=authz.challenges[0]).first().to_json())
-        ]
+        challenges_array = []
+        authz_status = "valid"
+        for challange_id in authz.challenges:
+            challange = json.loads(
+                ChallengeModel.objects(id=challange_id).first().to_json()
+            )
+            challenges_array.append(challange)
+            if challange["status"] != "valid":
+                authz_status = challange["status"]
+        logging.info(f"[AuthZ] status - {authz.status} : {authz_status}")
+
+        if authz.status != authz_status:
+            authz.update(status=authz_status)
+            authz.reload()
+
         output = {
             "status": authz.status,
             "expires": authz.expires,
             "identifier": authz.identifier,
-            "challenges": challenge,
+            "challenges": challenges_array,
         }
-        logging.info(f"[AuthZ] output - {output}")
+        logging.debug(f"[AuthZ] output - {output}")
 
         response = make_response(jsonify(output), 200)
         response.headers["Location"] = f"{URL_SERVER}/authz/{id}"
@@ -181,13 +193,22 @@ class Order(Resource):
 
     def post(sefl, id):
         authorizations_array = []
-
+        order_status = "ready"
         order = OrderModel.objects(id=id).first()
         authorizations = AuthorizationModel.objects(orderid=str(order.id))
         for athz in authorizations:
             authorizations_array.append(
                 f"{URL_SERVER}/authz/{athz.id}",
             )
+            if athz.status != "valid":
+                order_status = "pending"
+        logging.info(f"[Order] status - {order.status} : {order_status}")
+
+        if order.status == "valid":
+            pass
+        elif order.status != order_status:
+            order.update(status=order_status)
+            order.reload()
 
         output = {
             "status": order.status,
@@ -213,14 +234,14 @@ class Challenge(Resource):
         logging.debug(f"[Challenge] authz_id - {authz_id}")
         logging.debug(f"[Challenge] type - {type}")
 
-        authz = AuthorizationModel.objects(id=str(authz_id)).first()
-        authz.update(status="valid")
+        # authz = AuthorizationModel.objects(id=str(authz_id)).first()
+        # authz.update(status="valid")
 
         challenge = ChallengeModel.objects(authzid=str(authz_id)).first()
         challenge.update(status="valid")
 
-        order = OrderModel.objects(id=authz.orderid)
-        order.update(status="ready")
+        # order = OrderModel.objects(id=authz.orderid)
+        # order.update(status="ready")
 
         return {"status": "valid"}, 200
 
@@ -295,6 +316,7 @@ class NewOrder(Resource):
             challenges = [str(challenge.id)]
 
             authz.update(challenges=challenges)
+            authz.reload()
             authz_array.append(f"{URL_SERVER}/authz/{authz.id}")
 
         output = {
@@ -365,7 +387,9 @@ class FinalizeOrder(Resource):
         test = sign_certificate_request(payload["csr"])
 
         order = OrderModel.objects(id=id).first()
+        logging.info(f"[Order] status - {order.status} : valid")
         order.update(status="valid")
+        order.reload()
         authorizations = AuthorizationModel.objects(orderid=str(order.id))
 
         crt = CertModel(orderid=str(order.id), cert=test)
@@ -394,12 +418,15 @@ class Certs(Resource):
 
     def post(self, id):
         rc = 404
+
         output = ""
         # TODO add chain
         cert_data = CertModel.objects(orderid=str(id)).first()
         if cert_data:
             rc = 200
-            output = cert_data.cert
+            output = f"{cert_data.cert}\n{get_ca().decode()}"
+            # output = f"{cert_data.cert}"
+            logging.info(output)
 
         response = make_response(output, rc)
         response.mimetype = "application/pem-certificate-chain"
