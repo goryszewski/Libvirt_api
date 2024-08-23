@@ -41,29 +41,6 @@ class AccountPayloadSchema(Schema):
     jwk = fields.Str()
     termsOfServiceAgreed = fields.Bool()
     onlyReturnExisting = fields.Bool()
-    # orders = fields.Str()
-    # status = fields.Str()
-
-
-# Order
-
-
-class Identifier(EmbeddedDocument):
-    type = StringField()
-    value = StringField()
-
-
-class OrderModel(Document):
-    accountid = StringField()
-    status = StringField()
-    expires = StringField()
-    identifiers = ListField(EmbeddedDocumentField(Identifier))
-    notBefore = StringField()
-    notAfter = StringField()
-    error = DictField()
-    authorizations = fields.List(fields.Str())
-    finalize = StringField()
-    certificate = StringField()
 
 
 class IdentifierSchema(Schema):
@@ -75,11 +52,12 @@ class RequestOrderSchema(Schema):
     identifiers = fields.List(fields.Nested(IdentifierSchema))
 
 
-# Authorization
+class Identifier(EmbeddedDocument):
+    type = StringField()
+    value = StringField()
 
 
-class ChallengeModel(Document):
-    authzid = StringField()
+class ChallengeModel(EmbeddedDocument):
     url = StringField()
     type = StringField()
     status = StringField()
@@ -87,14 +65,25 @@ class ChallengeModel(Document):
     validation = StringField()
 
 
-class AuthorizationModel(Document):
-    accountid = StringField()
-    orderid = StringField()
+class AuthorizationModel(EmbeddedDocument):
     status = StringField()
     expires = StringField()
     identifier = DictField()
-    challenges = ListField(StringField())
+    challenges = ListField(EmbeddedDocumentField(ChallengeModel))
     wildcard = BooleanField()
+
+
+class OrderModel(Document):
+    accountid = StringField()
+    status = StringField()
+    expires = StringField()
+    identifiers = ListField(EmbeddedDocumentField(Identifier))
+    notBefore = StringField()
+    notAfter = StringField()
+    error = DictField()
+    authorizations = ListField(EmbeddedDocumentField(AuthorizationModel))
+    finalize = StringField()
+    certificate = StringField()
 
 
 # Cert

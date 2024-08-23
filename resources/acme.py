@@ -5,16 +5,7 @@ from lib.logging import logging
 from lib.ca import sign_certificate_request, get_ca
 from datetime import datetime, timedelta
 
-from Model.AcmeAccount import (
-    AccountModel,
-    AccountProtectSchema,
-    AccountPayloadSchema,
-    RequestOrderSchema,
-    OrderModel,
-    AuthorizationModel,
-    CertModel,
-    ChallengeModel,
-)
+from Model.Acme import *
 
 
 URL_SERVER = "http://10.17.3.1:8050/acme"
