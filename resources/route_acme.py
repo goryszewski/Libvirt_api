@@ -16,6 +16,16 @@ def route_acme(api):
     api.add_resource(Finalize, "/acme/finalize/<order_id>")  # POST
     api.add_resource(RevokeCert, "/acme/revoke-cert")  # POST
 
+#  new route
+
+    api.add_resource(NewOrder,      "/acme/order")
+    api.add_resource(Order,         "/acme/order/<order_id>")
+    api.add_resource(FinalizeOrder, "/acme/order/<order_id>/finalize")
+    api.add_resource(AuthZ,         "/acme/order/<order_id>/authz/<authz_id>")
+    api.add_resource(Challenge,     "/acme/order/<order_id>/authz/<authz_id>/challenge/<challenge_id>/<type>")
+    api.add_resource(Certs,         "/acme/order/<order_id>/certificate/<certificate_id>")
+
+
 
 # api-1            | 2024-08-08 23:36:56 INFO     10.17.3.152 - - [08/Aug/2024 23:36:56] "GET /acme/directory HTTP/1.1" 200 -
 # api-1            | 2024-08-08 23:36:56 INFO     10.17.3.152 - - [08/Aug/2024 23:36:56] "HEAD /acme/new-nonce HTTP/1.1" 200 -
