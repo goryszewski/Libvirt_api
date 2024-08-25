@@ -6,8 +6,9 @@ from mongoengine import (
     DictField,
     EmbeddedDocumentField,
     EmbeddedDocument,
+    ObjectIdField,
 )
-
+from bson import ObjectId
 from marshmallow import Schema, fields
 
 # Account
@@ -58,6 +59,7 @@ class Identifier(EmbeddedDocument):
 
 
 class ChallengeModel(EmbeddedDocument):
+    id = ObjectIdField(required=True, default=lambda: ObjectId())
     url = StringField()
     type = StringField()
     status = StringField()
@@ -66,6 +68,7 @@ class ChallengeModel(EmbeddedDocument):
 
 
 class AuthorizationModel(EmbeddedDocument):
+    id = ObjectIdField(required=True, default=lambda: ObjectId())
     status = StringField()
     expires = StringField()
     identifier = DictField()

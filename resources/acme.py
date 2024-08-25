@@ -7,6 +7,9 @@ from datetime import datetime, timedelta
 
 from Model.Acme import *
 
+from lib.acme import Order as OrderC
+
+import uuid
 
 URL_SERVER = "http://10.17.3.1:8050/acme"
 VALID_CRT_DAYS = 30
@@ -36,11 +39,11 @@ class Directory(Resource):
 
     def get(self):
         output = {
+            "newOrder": f"{URL_SERVER}/order",
             "newNonce": f"{URL_SERVER}/new-nonce",
-            "newAccount": f"{URL_SERVER}/new-account",
-            "newOrder": f"{URL_SERVER}/new-order",
-            "revokeCert": f"{URL_SERVER}/revoke-cert",
             "keyChange": f"{URL_SERVER}/key-change",
+            "newAccount": f"{URL_SERVER}/account",
+            "revokeCert": f"{URL_SERVER}/revoke-cert",
         }
         return output, 200
 
@@ -147,8 +150,12 @@ class AuthZ(Resource):
     def get(self):
         return "", 501
 
-    def post(sefl, id):
-        authz = AuthorizationModel.objects(id=id).first()
+    def post(sefl, order_id, authz_id):
+        order = OrderModel.objects(id=order_id, schools__match={"id": authz_id})
+
+        print(order)
+
+        authz = AuthorizationModel.objects(id=order_id).first()
         challenges_array = []
         authz_status = "valid"
         for challange_id in authz.challenges:
@@ -173,7 +180,7 @@ class AuthZ(Resource):
         logging.debug(f"[AuthZ] output - {output}")
 
         response = make_response(jsonify(output), 200)
-        response.headers["Location"] = f"{URL_SERVER}/authz/{id}"
+        response.headers["Location"] = f"{URL_SERVER}/order/{order_id}/authz/{authz_id}"
         response.headers["Replay-Nonce"] = "6S8dQIvS7eL2ls4K2fB2sz-9I23cZJq_iBYjGn4Z7H8"
         return response
 
@@ -182,11 +189,11 @@ class Order(Resource):
     def __init__(self):
         pass
 
-    def post(sefl, id):
+    def post(sefl, order_id):
         authorizations_array = []
         order_status = "ready"
-        order = OrderModel.objects(id=id).first()
-        authorizations = AuthorizationModel.objects(orderid=str(order.id))
+        order = OrderModel.objects(id=order_id).first()
+        authorizations = order.authorizations
         for athz in authorizations:
             authorizations_array.append(
                 f"{URL_SERVER}/authz/{athz.id}",
@@ -244,80 +251,27 @@ class NewOrder(Resource):
     def post(self):
         request_json = request.get_json()
         headers = dict(request.headers)
-        logging.debug(f" [NewOrder] - headers : {headers}")
 
         protected = json.loads(decode_base64_fix(request_json["protected"]))
-        logging.debug(f"[NewOrder] protected - {protected}")
-        kid = protected["kid"]
-        account_id = kid.split("/")[-1]
-        logging.debug(f"[NewOrder] account_id - {account_id}")
         payload = json.loads(decode_base64_fix(request_json["payload"]))
-        identifiers = sorted(
-            payload["identifiers"], key=lambda x: (x["type"], x["value"])
-        )
-        logging.debug(f"[NewOrder] identifiers - {identifiers}")
-        payload["identifiers"] = identifiers
-        logging.debug(f"[NewOrder] payload - {payload}")
+
+        logging.debug(f"[NewOrder] - headers   - {headers}   ")
+        logging.debug(f"[NewOrder] - protected - {protected} ")
+        logging.debug(f"[NewOrder] - payload   - {payload}   ")
 
         error = self.order_schema.validate(payload)
         if error:
             logging.error(error)
             return error, 500
-        current_time = datetime.utcnow()
-        expires = current_time + timedelta(days=VALID_CRT_DAYS)
 
-        rc = 501
-        order = OrderModel.objects(**payload, accountid=account_id).first()
+        rc = 201
+
+        order = OrderC(protected["kid"], payload["identifiers"])
         if order:
             rc = 200
-        else:
-            order = OrderModel(
-                **self.order_schema.dump(payload),
-                status="pending",
-                accountid=account_id,
-                expires=expires.isoformat() + "Z",
-            )
-            order.save()
-            rc = 201
 
-        # create authorizations
-        authz_array = []
-        identifiers = to_json(order.identifiers)
-        for identifier in identifiers:
-            authz = AuthorizationModel(
-                accountid=account_id,
-                orderid=str(order.id),
-                status="pending",
-                expires=expires.isoformat() + "Z",
-                identifier=identifier,
-                challenges=[],
-                wildcard=False,
-            )
-            authz.save()
-            challenge = ChallengeModel(
-                url=f"{URL_SERVER}/challenge/{authz.id}/http-01",
-                type="http-01",
-                status="pending",
-                token="def456",
-                validation="dns-txt-record-value",
-                authzid=str(authz.id),
-            )
-            challenge.save()
-
-            challenges = [str(challenge.id)]
-
-            authz.update(challenges=challenges)
-            authz.reload()
-            authz_array.append(f"{URL_SERVER}/authz/{authz.id}")
-
-        output = {
-            "status": order.status,
-            "expires": order.expires,
-            "identifiers": to_json(order.identifiers),
-            "authorizations": authz_array,
-            "finalize": f"{URL_SERVER}/order/{order.id}/finalize",
-        }
-        logging.debug(f"[NewOrder] output - {output}")
+        output = order.output()
+        logging.info(f"[NewOrder] output - {output}")
 
         response = make_response(jsonify(output), rc)
         response.headers["Location"] = f"{URL_SERVER}/order/{order.id}"
@@ -422,21 +376,6 @@ class Certs(Resource):
         response = make_response(output, rc)
         response.mimetype = "application/pem-certificate-chain"
         return response
-
-
-class Finalize(Resource):
-    def __init__(self):
-        pass
-
-    def get(self):
-        return "", 501
-
-    def post(sefl, order_id):
-        # Zwrócenie odpowiedzi z certyfikatem
-        return {}, 501
-
-    def put(self):
-        return "", 501
 
 
 class RevokeCert(Resource):
