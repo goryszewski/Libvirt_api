@@ -96,3 +96,71 @@ class Challenge:
 
     def getMongo(self):
         return self.challenge
+
+
+class Account:
+    @property
+    def id(self):
+        if self.account:
+            return self.account.id
+
+        return self._id
+
+    @property
+    def status(self):
+        if self.account:
+            return self.account.status
+
+        return None
+
+    @property
+    def contact(self):
+        if self.account:
+            return self.account.contact
+
+        return self._contact
+
+    @contact.setter
+    def contact(self, value):
+        self._contact = value
+
+    @id.setter
+    def id(self, value):
+        self._id = value
+
+    def __init__(
+        self,
+        id=None,
+        jwk=None,
+        contact=None,
+        onlyReturnExisting=False,
+        termsOfServiceAgreed=None,
+    ) -> None:
+        self.jwk = jwk
+        self.id = id
+        self.contact = contact
+        self.account = None
+        self.termsOfServiceAgreed = termsOfServiceAgreed
+
+        self.newAccount = False
+
+        self.__load()
+        if not self.account and not onlyReturnExisting:
+            self.newAccount = True
+            self.__create()
+
+    def __load(self):
+        if self.id:
+            query = {"id": self.id}
+        else:
+            query = {"jwk": self.jwk}
+
+        self.account = AccountModel.objects(**query).first()
+
+    def __create(self) -> None:
+        self.account = AccountModel(
+            contact=self._contact,
+            termsOfServiceAgreed=self.termsOfServiceAgreed,
+            jwk=self.jwk,
+        )
+        self.account.save()

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 from Model.Acme import *
 
-from lib.acme import Order as OrderC
+from lib.acme import Order as OrderC, Account as AccountC
 
 import uuid
 
@@ -62,8 +62,8 @@ class Account(Resource):
         headers = dict(request.headers)
         logging.debug(f" [Account] - headers : {headers}")
 
-        account = AccountModel.objects(id=id).first()
-        if account:
+        account = AccountC(id=id)
+        if account.id:
             output = {
                 "status": account.status,
                 "contact": account.contact,
@@ -72,13 +72,13 @@ class Account(Resource):
             }
             response = make_response(jsonify(output), 200)
             return response
-        else:
-            output = {
-                "type": "urn:ietf:params:acme:error:accountDoesNotExist",
-                "detail": f"Account with ID {id} does not exist",
-                "status": 404,
-            }
-            return output, 404
+
+        output = {
+            "type": "urn:ietf:params:acme:error:accountDoesNotExist",
+            "detail": f"Account with ID {id} does not exist",
+            "status": 404,
+        }
+        return output, 404
 
 
 class NewAccount(Resource):
@@ -92,10 +92,10 @@ class NewAccount(Resource):
     def post(self):
         request_json = request.get_json()
         headers = dict(request.headers)
-        logging.debug(f" [NewAccount] - headers : {headers}")
-
         protected = json.loads(decode_base64_fix(request_json["protected"]))
-        logging.debug(f" [NewAccount] - protected : {protected}")
+
+        logging.info(f" [NewAccount] - headers : {headers}")
+        logging.info(f" [NewAccount] - protected : {protected}")
 
         error = self.account_protect_schema.validate(protected)
         if error:
@@ -103,31 +103,26 @@ class NewAccount(Resource):
             return error, 422
 
         payload = json.loads(decode_base64_fix(request_json["payload"]))
+        logging.info(f" [NewAccount] - payload : {payload}")
         error = self.account_payload_schema.validate(payload)
         if error:
             logging.error(f"2: {error}")
             return error, 422
 
-        logging.debug(f" [NewAccount] - payload : {payload}")
+        account = AccountC(
+            **self.account_payload_schema.dump(payload), jwk=protected["jwk"]["n"]
+        )
 
-        account = AccountModel.objects(jwk=protected["jwk"]["n"]).first()
-
-        rc = 501
-        if account:
-            rc = 200
-        else:
-            if "onlyReturnExisting" in payload and payload["onlyReturnExisting"]:
-                output = {
-                    "type": "urn:ietf:params:acme:error:accountDoesNotExist",
-                    "detail": "No account exists with the provided key",
-                    "status": 400,
-                }
-                return output, 400
+        if not account.id:
+            output = {
+                "type": "urn:ietf:params:acme:error:accountDoesNotExist",
+                "detail": "No account exists with the provided key",
+                "status": 400,
+            }
+            return output, 400
+        rc = 200
+        if account.newAccount:
             rc = 201
-            account = AccountModel(
-                **self.account_payload_schema.dump(payload), jwk=protected["jwk"]["n"]
-            )
-            account.save()
 
         output = {
             "contact": account.contact,
