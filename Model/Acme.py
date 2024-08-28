@@ -4,22 +4,26 @@ from mongoengine import (
     ListField,
     BooleanField,
     DictField,
+    EnumField,
     EmbeddedDocumentField,
     EmbeddedDocument,
     ObjectIdField,
 )
+
+from enum import Enum
 from bson import ObjectId
 from marshmallow import Schema, fields
 
 # Account
 
 
-class AccountModel(Document):
-    contact = ListField(StringField())
-    jwk = StringField()
-    termsOfServiceAgreed = BooleanField()
-    orders = StringField()
-    status = StringField()
+class StatusAccount(Enum):
+    PENDING = "pending"
+    VALID = "valid"
+    INVALID = "invalid"
+    DEACTIVATED = "deactivated"
+    EXPIRED = "expired"
+    REVOKED = "revoked"
 
 
 class JWKSchema(Schema):
@@ -76,7 +80,7 @@ class AuthorizationModel(EmbeddedDocument):
     wildcard = BooleanField()
 
 
-class OrderModel(Document):
+class OrderModel(EmbeddedDocument):
     accountid = StringField()
     status = StringField()
     expires = StringField()
@@ -87,6 +91,14 @@ class OrderModel(Document):
     authorizations = ListField(EmbeddedDocumentField(AuthorizationModel))
     finalize = StringField()
     certificate = StringField()
+
+
+class AccountModel(Document):
+    contact = ListField(StringField())
+    jwk = StringField()
+    termsOfServiceAgreed = BooleanField()
+    orders = ListField(EmbeddedDocumentField(OrderModel))
+    status = EnumField(StatusAccount, default=StatusAccount.VALID)
 
 
 # Cert

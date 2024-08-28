@@ -3,10 +3,7 @@ from .acme import *
 
 def route_acme(api):
     api.add_resource(Directory, "/acme/directory")  # Get
-    api.add_resource(NewAccount, "/acme/account")  # POST
-    api.add_resource(Account, "/acme/account/<id>")
     api.add_resource(NewNonce, "/acme/new-nonce")
-
     api.add_resource(AcmeChallenge, "/.well-known/acme-challenge/<token>")  # GET
     api.add_resource(RevokeCert, "/acme/revoke-cert")  # POST
 
@@ -19,6 +16,8 @@ def route_acme(api):
 
     #  new route
 
+    api.add_resource(NewAccount, "/acme/account")
+    api.add_resource(Account, "/acme/account/<account_id>")
     api.add_resource(NewOrder, "/acme/order")
     api.add_resource(Order, "/acme/order/<order_id>")
     api.add_resource(FinalizeOrder, "/acme/order/<order_id>/finalize")

@@ -58,14 +58,15 @@ class Account(Resource):
     def __init__(self):
         pass
 
-    def post(self, id):
+    def post(self, account_id):
         headers = dict(request.headers)
         logging.debug(f" [Account] - headers : {headers}")
 
-        account = AccountC(id=id)
+        account = AccountC(id=account_id)
         if account.id:
+            # print(str(account.status))
             output = {
-                "status": account.status,
+                "status": account.status.value,
                 "contact": account.contact,
                 "termsOfServiceAgreed": account.termsOfServiceAgreed,
                 "orders": f"{URL_SERVER}/account/{account.id}/orders",

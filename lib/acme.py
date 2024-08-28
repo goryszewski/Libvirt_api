@@ -141,7 +141,6 @@ class Account:
         self.contact = contact
         self.account = None
         self.termsOfServiceAgreed = termsOfServiceAgreed
-
         self.newAccount = False
 
         self.__load()
