@@ -25,32 +25,40 @@ class Order:
     def id(self):
         return self.order.id
 
-    def __init__(self, kid, identifiers) -> None:
-        self.account_id = kid.split("/")[-1]
+    def __init__(self, identifiers) -> None:
         self.identifiers = sorted(identifiers, key=lambda x: (x["type"], x["value"]))
-        self.__create()
+        self.order = self.__load()
+        if not self.order:
+            self.__create()
+
+    def __load(self):
+        return False
 
     def __create(self) -> None:
         current_time = datetime.utcnow()
         expires = current_time + timedelta(days=VALID_CRT_DAYS)
         authz_array = []
         authz_model_array = []
-        # identifiers = to_json(order.identifiers)
+
         for identifier in self.identifiers:
             authz = Authorization(identifier).getMongo()
             authz_model_array.append(authz)
 
         self.order = OrderModel(
-            accountid=self.account_id,
-            status="pending",
+            status=StatusOrder.PENDING.value,
             identifiers=self.identifiers,
             expires=expires.isoformat() + "Z",
             authorizations=authz_model_array,
         )
+        self.is_new = True
 
-        self.order.save()
+    def isNew(self):
+        return self.is_new
 
-    def output(self) -> dict:
+    def output(self):
+        return self.order
+
+    def json(self):
         return {
             "status": self.order.status,
             "expires": self.order.expires,
@@ -163,3 +171,8 @@ class Account:
             jwk=self.jwk,
         )
         self.account.save()
+
+    def NewOrder(self, identifiers):
+        order = Order(identifiers=identifiers)
+        self.account.update(orders=[order.output()])
+        return order

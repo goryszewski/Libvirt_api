@@ -64,7 +64,6 @@ class Account(Resource):
 
         account = AccountC(id=account_id)
         if account.id:
-            # print(str(account.status))
             output = {
                 "status": account.status.value,
                 "contact": account.contact,
@@ -260,13 +259,18 @@ class NewOrder(Resource):
             logging.error(error)
             return error, 500
 
-        rc = 201
+        rc = 200
 
-        order = OrderC(protected["kid"], payload["identifiers"])
-        if order:
-            rc = 200
+        print(protected["kid"])
 
-        output = order.output()
+        account = AccountC(id=protected["kid"].split("/")[-1])
+
+        order = account.NewOrder(payload["identifiers"])
+
+        if order.isNew():
+            rc = 201
+
+        output = order.json()
         logging.info(f"[NewOrder] output - {output}")
 
         response = make_response(jsonify(output), rc)

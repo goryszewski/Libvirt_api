@@ -26,6 +26,11 @@ class StatusAccount(Enum):
     REVOKED = "revoked"
 
 
+class StatusOrder(Enum):
+    PENDING = "pending"
+    VALID = "valid"
+
+
 class JWKSchema(Schema):
     kty = fields.Str()  # RSA
     e = fields.Str()  # "AQAB",
@@ -81,8 +86,8 @@ class AuthorizationModel(EmbeddedDocument):
 
 
 class OrderModel(EmbeddedDocument):
-    accountid = StringField()
-    status = StringField()
+    id = StringField()
+    status = EnumField(StatusOrder, default=StatusOrder.PENDING)
     expires = StringField()
     identifiers = ListField(EmbeddedDocumentField(Identifier))
     notBefore = StringField()
