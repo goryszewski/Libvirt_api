@@ -261,8 +261,6 @@ class NewOrder(Resource):
 
         rc = 200
 
-        print(protected["kid"])
-
         account = AccountC(id=protected["kid"].split("/")[-1])
 
         order = account.NewOrder(payload["identifiers"])

@@ -13,6 +13,11 @@ from .Hdds import HddSchema
 # 3 - todo delete
 
 
+class NodeSshSchema(Schema):
+    user = fields.Str()
+    key = fields.Str()
+
+
 class VirtualMachineSchema(Schema):
     id = fields.Int()
     memory = fields.Int(required=True)

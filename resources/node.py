@@ -3,6 +3,7 @@ from flask import request
 
 from lib.Libvirt import Libvirt
 from lib.logging import logging
+from Model.VMS import NodeSshSchema
 
 
 class V2_Node(Resource):
@@ -23,6 +24,24 @@ class V2_Node(Resource):
         for vm in vms:
             output.append(vm.ToJson())
         return output, 200
+
+class V2_Node_SSH(Resource):
+    def __init__(self):
+        self.conn = Libvirt()
+        self.node_ssh_schema = NodeSshSchema()
+
+    def post(self,name):
+        vm = self.conn.getVmByName(name)
+        payload = request.get_json()
+
+        error = self.node_ssh_schema.validate(payload)
+        if error:
+            print(error)
+            return error, 422
+
+        vm.setSSH(payload['user'],payload['key'])
+
+        return {},204
 
 
 class V2_NodeBindDisk(Resource):

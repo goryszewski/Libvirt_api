@@ -137,3 +137,7 @@ class VM:
         doc = libxml2.parseDoc(xmldesc).xpathNewContext()
 
         return doc.xpathEval("/domain")[0]
+
+    def setSSH(self, user, key):
+        print(user, key)
+        return True
