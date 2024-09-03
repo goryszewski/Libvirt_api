@@ -4,6 +4,7 @@ from typing import List
 
 from .Base import TARGET_DEV_DISK
 from .class_disk import Disk
+from .cmd import f_cmd
 from .class_interfaceDevice import InterfaceDevice
 
 
@@ -139,5 +140,13 @@ class VM:
         return doc.xpathEval("/domain")[0]
 
     def setSSH(self, user, key):
-        print(user, key)
+        args = {"username": user, "key": [key], "reset": True}
+        (output,error_code) = f_cmd(self.vm.name, "guest-ssh-add-authorized-keys", args)
+        print("setSSH", user, key, output,error_code)
+        return True
+
+    def getSSH(self, user):
+        args = {"username": user}
+        (output,error_code) = f_cmd(self.vm.name, "guest-ssh-get-authorized-keys", args)
+        print("getSSH", user, output,error_code)
         return True
