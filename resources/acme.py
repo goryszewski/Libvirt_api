@@ -5,11 +5,17 @@ from lib.logging import logging
 from lib.ca import sign_certificate_request, get_ca
 from datetime import datetime, timedelta
 
-from Model.Acme import *
+from Model.AcmeAccount import (
+    AccountModel,
+    AccountProtectSchema,
+    AccountPayloadSchema,
+    RequestOrderSchema,
+    OrderModel,
+    AuthorizationModel,
+    CertModel,
+    ChallengeModel,
+)
 
-from lib.acme import Order as OrderC, Account as AccountC
-
-import uuid
 
 URL_SERVER = "http://10.17.3.1:8050/acme"
 VALID_CRT_DAYS = 30
@@ -39,11 +45,11 @@ class Directory(Resource):
 
     def get(self):
         output = {
-            "newOrder": f"{URL_SERVER}/order",
             "newNonce": f"{URL_SERVER}/new-nonce",
-            "keyChange": f"{URL_SERVER}/key-change",
-            "newAccount": f"{URL_SERVER}/account",
+            "newAccount": f"{URL_SERVER}/new-account",
+            "newOrder": f"{URL_SERVER}/new-order",
             "revokeCert": f"{URL_SERVER}/revoke-cert",
+            "keyChange": f"{URL_SERVER}/key-change",
         }
         return output, 200
 
@@ -58,27 +64,27 @@ class Account(Resource):
     def __init__(self):
         pass
 
-    def post(self, account_id):
+    def post(self, id):
         headers = dict(request.headers)
         logging.debug(f" [Account] - headers : {headers}")
 
-        account = AccountC(id=account_id)
-        if account.id:
+        account = AccountModel.objects(id=id).first()
+        if account:
             output = {
-                "status": account.status.value,
+                "status": account.status,
                 "contact": account.contact,
                 "termsOfServiceAgreed": account.termsOfServiceAgreed,
                 "orders": f"{URL_SERVER}/account/{account.id}/orders",
             }
             response = make_response(jsonify(output), 200)
             return response
-
-        output = {
-            "type": "urn:ietf:params:acme:error:accountDoesNotExist",
-            "detail": f"Account with ID {id} does not exist",
-            "status": 404,
-        }
-        return output, 404
+        else:
+            output = {
+                "type": "urn:ietf:params:acme:error:accountDoesNotExist",
+                "detail": f"Account with ID {id} does not exist",
+                "status": 404,
+            }
+            return output, 404
 
 
 class NewAccount(Resource):
@@ -92,10 +98,10 @@ class NewAccount(Resource):
     def post(self):
         request_json = request.get_json()
         headers = dict(request.headers)
-        protected = json.loads(decode_base64_fix(request_json["protected"]))
+        logging.debug(f" [NewAccount] - headers : {headers}")
 
-        logging.info(f" [NewAccount] - headers : {headers}")
-        logging.info(f" [NewAccount] - protected : {protected}")
+        protected = json.loads(decode_base64_fix(request_json["protected"]))
+        logging.debug(f" [NewAccount] - protected : {protected}")
 
         error = self.account_protect_schema.validate(protected)
         if error:
@@ -103,26 +109,31 @@ class NewAccount(Resource):
             return error, 422
 
         payload = json.loads(decode_base64_fix(request_json["payload"]))
-        logging.info(f" [NewAccount] - payload : {payload}")
         error = self.account_payload_schema.validate(payload)
         if error:
             logging.error(f"2: {error}")
             return error, 422
 
-        account = AccountC(
-            **self.account_payload_schema.dump(payload), jwk=protected["jwk"]["n"]
-        )
+        logging.debug(f" [NewAccount] - payload : {payload}")
 
-        if not account.id:
-            output = {
-                "type": "urn:ietf:params:acme:error:accountDoesNotExist",
-                "detail": "No account exists with the provided key",
-                "status": 400,
-            }
-            return output, 400
-        rc = 200
-        if account.newAccount:
+        account = AccountModel.objects(jwk=protected["jwk"]["n"]).first()
+
+        rc = 501
+        if account:
+            rc = 200
+        else:
+            if "onlyReturnExisting" in payload and payload["onlyReturnExisting"]:
+                output = {
+                    "type": "urn:ietf:params:acme:error:accountDoesNotExist",
+                    "detail": "No account exists with the provided key",
+                    "status": 400,
+                }
+                return output, 400
             rc = 201
+            account = AccountModel(
+                **self.account_payload_schema.dump(payload), jwk=protected["jwk"]["n"]
+            )
+            account.save()
 
         output = {
             "contact": account.contact,
@@ -145,12 +156,8 @@ class AuthZ(Resource):
     def get(self):
         return "", 501
 
-    def post(sefl, order_id, authz_id):
-        order = OrderModel.objects(id=order_id, schools__match={"id": authz_id})
-
-        print(order)
-
-        authz = AuthorizationModel.objects(id=order_id).first()
+    def post(sefl, id):
+        authz = AuthorizationModel.objects(id=id).first()
         challenges_array = []
         authz_status = "valid"
         for challange_id in authz.challenges:
@@ -175,7 +182,7 @@ class AuthZ(Resource):
         logging.debug(f"[AuthZ] output - {output}")
 
         response = make_response(jsonify(output), 200)
-        response.headers["Location"] = f"{URL_SERVER}/order/{order_id}/authz/{authz_id}"
+        response.headers["Location"] = f"{URL_SERVER}/authz/{id}"
         response.headers["Replay-Nonce"] = "6S8dQIvS7eL2ls4K2fB2sz-9I23cZJq_iBYjGn4Z7H8"
         return response
 
@@ -184,11 +191,11 @@ class Order(Resource):
     def __init__(self):
         pass
 
-    def post(sefl, order_id):
+    def post(sefl, id):
         authorizations_array = []
         order_status = "ready"
-        order = OrderModel.objects(id=order_id).first()
-        authorizations = order.authorizations
+        order = OrderModel.objects(id=id).first()
+        authorizations = AuthorizationModel.objects(orderid=str(order.id))
         for athz in authorizations:
             authorizations_array.append(
                 f"{URL_SERVER}/authz/{athz.id}",
@@ -246,30 +253,80 @@ class NewOrder(Resource):
     def post(self):
         request_json = request.get_json()
         headers = dict(request.headers)
+        logging.debug(f" [NewOrder] - headers : {headers}")
 
         protected = json.loads(decode_base64_fix(request_json["protected"]))
+        logging.debug(f"[NewOrder] protected - {protected}")
+        kid = protected["kid"]
+        account_id = kid.split("/")[-1]
+        logging.debug(f"[NewOrder] account_id - {account_id}")
         payload = json.loads(decode_base64_fix(request_json["payload"]))
-
-        logging.debug(f"[NewOrder] - headers   - {headers}   ")
-        logging.debug(f"[NewOrder] - protected - {protected} ")
-        logging.debug(f"[NewOrder] - payload   - {payload}   ")
+        identifiers = sorted(
+            payload["identifiers"], key=lambda x: (x["type"], x["value"])
+        )
+        logging.debug(f"[NewOrder] identifiers - {identifiers}")
+        payload["identifiers"] = identifiers
+        logging.debug(f"[NewOrder] payload - {payload}")
 
         error = self.order_schema.validate(payload)
         if error:
             logging.error(error)
             return error, 500
+        current_time = datetime.utcnow()
+        expires = current_time + timedelta(days=VALID_CRT_DAYS)
 
-        rc = 200
-
-        account = AccountC(id=protected["kid"].split("/")[-1])
-
-        order = account.NewOrder(payload["identifiers"])
-
-        if order.isNew():
+        rc = 501
+        order = OrderModel.objects(**payload, accountid=account_id).first()
+        if order:
+            rc = 200
+        else:
+            order = OrderModel(
+                **self.order_schema.dump(payload),
+                status="pending",
+                accountid=account_id,
+                expires=expires.isoformat() + "Z",
+            )
+            order.save()
             rc = 201
 
-        output = order.json()
-        logging.info(f"[NewOrder] output - {output}")
+        # create authorizations
+        authz_array = []
+        identifiers = to_json(order.identifiers)
+        for identifier in identifiers:
+            authz = AuthorizationModel(
+                accountid=account_id,
+                orderid=str(order.id),
+                status="pending",
+                expires=expires.isoformat() + "Z",
+                identifier=identifier,
+                challenges=[],
+                wildcard=False,
+            )
+            authz.save()
+            challenge = ChallengeModel(
+                url=f"{URL_SERVER}/challenge/{authz.id}/http-01",
+                type="http-01",
+                status="pending",
+                token="def456",
+                validation="dns-txt-record-value",
+                authzid=str(authz.id),
+            )
+            challenge.save()
+
+            challenges = [str(challenge.id)]
+
+            authz.update(challenges=challenges)
+            authz.reload()
+            authz_array.append(f"{URL_SERVER}/authz/{authz.id}")
+
+        output = {
+            "status": order.status,
+            "expires": order.expires,
+            "identifiers": to_json(order.identifiers),
+            "authorizations": authz_array,
+            "finalize": f"{URL_SERVER}/order/{order.id}/finalize",
+        }
+        logging.debug(f"[NewOrder] output - {output}")
 
         response = make_response(jsonify(output), rc)
         response.headers["Location"] = f"{URL_SERVER}/order/{order.id}"
@@ -374,6 +431,21 @@ class Certs(Resource):
         response = make_response(output, rc)
         response.mimetype = "application/pem-certificate-chain"
         return response
+
+
+class Finalize(Resource):
+    def __init__(self):
+        pass
+
+    def get(self):
+        return "", 501
+
+    def post(sefl, order_id):
+        # Zwrócenie odpowiedzi z certyfikatem
+        return {}, 501
+
+    def put(self):
+        return "", 501
 
 
 class RevokeCert(Resource):
